@@ -1,0 +1,14 @@
+node_modules
+dist
+.env
+.env.local
+*.log
+.git
+.gitignore
+README.md
+.prettierrc
+eslint.config.mjs
+test
+*.spec.ts
+coverage
+.nyc_output
