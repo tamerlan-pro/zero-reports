@@ -1,33 +1,49 @@
-version: '3.8'
-
-# Docker Compose для локальной разработки с PostgreSQL и Redis в контейнерах
+# Docker Compose для локальной разработки
 
 services:
   # ================================
-  # Backend (NestJS) - Dev mode
+  # PostgreSQL
+  # ================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: zeroreports-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: zeroreports
+      POSTGRES_PASSWORD: zeroreports_secret
+      POSTGRES_DB: zeroreports
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U zeroreports"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - zeroreports-network
+
+  # ================================
+  # Backend API (NestJS)
   # ================================
   server:
     build:
       context: ./server
       dockerfile: Dockerfile
-    container_name: zeroapp-server-dev
+    container_name: zeroreports-server-dev
     restart: unless-stopped
     ports:
       - "3000:3000"
     environment:
       - NODE_ENV=development
       - PORT=3000
-      - DATABASE_URL=postgresql://zeroapp:zeroapp_secret@postgres:5432/zeroapp
-      - REDIS_URL=redis://default:redis_secret@redis:6379/0
-      - JWT_SECRET=dev-jwt-secret-change-in-production
-      - JWT_EXPIRES_IN=7d
+      - DATABASE_URL=postgresql://zeroreports:zeroreports_secret@postgres:5432/zeroreports
     depends_on:
       postgres:
         condition: service_healthy
-      redis:
-        condition: service_healthy
     networks:
-      - zeroapp-network
+      - zeroreports-network
 
   # ================================
   # Frontend (Vite + Nginx)
@@ -37,63 +53,19 @@ services:
       context: ./client
       dockerfile: Dockerfile
       args:
-        - VITE_API_URL=http://localhost:3000
-    container_name: zeroapp-client-dev
+        - VITE_API_URL=/api
+    container_name: zeroreports-client-dev
     restart: unless-stopped
     ports:
       - "80:80"
     depends_on:
       - server
     networks:
-      - zeroapp-network
-
-  # ================================
-  # PostgreSQL
-  # ================================
-  postgres:
-    image: postgres:16-alpine
-    container_name: zeroapp-postgres
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: zeroapp
-      POSTGRES_PASSWORD: zeroapp_secret
-      POSTGRES_DB: zeroapp
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U zeroapp"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - zeroapp-network
-
-  # ================================
-  # Redis
-  # ================================
-  redis:
-    image: redis:7-alpine
-    container_name: zeroapp-redis
-    restart: unless-stopped
-    command: redis-server --requirepass redis_secret
-    volumes:
-      - redis_data:/data
-    ports:
-      - "6379:6379"
-    healthcheck:
-      test: ["CMD", "redis-cli", "-a", "redis_secret", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - zeroapp-network
+      - zeroreports-network
 
 networks:
-  zeroapp-network:
+  zeroreports-network:
     driver: bridge
 
 volumes:
   postgres_data:
-  redis_data:

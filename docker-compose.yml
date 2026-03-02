@@ -1,6 +1,5 @@
 # ===========================================
-# ZeroApp - Production Docker Compose
-# Для деплоя на Timeweb как единое приложение
+# ZeroReports - Production Docker Compose
 # ===========================================
 
 services:
@@ -11,7 +10,7 @@ services:
     build:
       context: ./server
       dockerfile: Dockerfile
-    container_name: zeroapp-server
+    container_name: zeroreports-server
     restart: unless-stopped
     expose:
       - "3000"
@@ -19,9 +18,6 @@ services:
       - NODE_ENV=production
       - PORT=3000
       - DATABASE_URL=${DATABASE_URL}
-      - REDIS_URL=${REDIS_URL}
-      - JWT_SECRET=${JWT_SECRET}
-      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-7d}
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
       interval: 30s
@@ -29,102 +25,7 @@ services:
       retries: 3
       start_period: 10s
     networks:
-      - zeroapp-network
-
-  # ================================
-  # Cube Store Router
-  # Координирует работу воркеров
-  # ================================
-  cubestore_router:
-    image: cubejs/cubestore:latest
-    platform: linux/amd64
-    container_name: zeroapp-cubestore-router
-    restart: unless-stopped
-    environment:
-      - CUBESTORE_SERVER_NAME=cubestore_router:9999
-      - CUBESTORE_META_PORT=9999
-      - CUBESTORE_WORKERS=cubestore_worker:10001
-      - CUBESTORE_REMOTE_DIR=/cube/data
-    volumes:
-      - cubestore_data:/cube/data
-    expose:
-      - "3030"
-      - "3031"
-      - "9999"
-    healthcheck:
-      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/localhost/3030'"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 15s
-    networks:
-      - zeroapp-network
-
-  # ================================
-  # Cube Store Worker
-  # Выполняет запросы и pre-aggregations
-  # ================================
-  cubestore_worker:
-    image: cubejs/cubestore:latest
-    platform: linux/amd64
-    container_name: zeroapp-cubestore-worker
-    restart: unless-stopped
-    environment:
-      - CUBESTORE_SERVER_NAME=cubestore_worker:10001
-      - CUBESTORE_WORKER_PORT=10001
-      - CUBESTORE_META_ADDR=cubestore_router:9999
-      - CUBESTORE_WORKERS=cubestore_worker:10001
-      - CUBESTORE_REMOTE_DIR=/cube/data
-    volumes:
-      - cubestore_data:/cube/data
-    expose:
-      - "10001"
-    depends_on:
-      cubestore_router:
-        condition: service_healthy
-    networks:
-      - zeroapp-network
-
-  # ================================
-  # Cube.js Analytics Engine
-  # ================================
-  cube:
-    build:
-      context: ./cube
-      dockerfile: Dockerfile
-    container_name: zeroapp-cube
-    restart: unless-stopped
-    expose:
-      - "4000"
-    environment:
-      - CUBEJS_DB_TYPE=postgres
-      - CUBEJS_DB_HOST=${CUBEJS_DB_HOST}
-      - CUBEJS_DB_PORT=${CUBEJS_DB_PORT:-5432}
-      - CUBEJS_DB_NAME=${CUBEJS_DB_NAME}
-      - CUBEJS_DB_USER=${CUBEJS_DB_USER}
-      - CUBEJS_DB_PASS=${CUBEJS_DB_PASS}
-      - CUBEJS_DB_SSL=true
-      - CUBEJS_API_SECRET=${CUBEJS_API_SECRET}
-      - CUBEJS_CORS_ORIGIN=*
-      - CUBEJS_DEV_MODE=false
-      - CUBEJS_SCHEDULED_REFRESH=true
-      - CUBEJS_TELEMETRY=false
-      # Cube Store connection
-      - CUBEJS_CUBESTORE_HOST=cubestore_router
-      - CUBEJS_CUBESTORE_PORT=3030
-    depends_on:
-      cubestore_router:
-        condition: service_healthy
-      cubestore_worker:
-        condition: service_started
-    healthcheck:
-      test: ["CMD-SHELL", "node -e \"require('http').get('http://localhost:4000/livez', (r) => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))\""]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
-    networks:
-      - zeroapp-network
+      - zeroreports-network
 
   # ================================
   # Frontend (Vite + Nginx)
@@ -135,14 +36,12 @@ services:
       dockerfile: Dockerfile
       args:
         - VITE_API_URL=/api
-    container_name: zeroapp-client
+    container_name: zeroreports-client
     restart: unless-stopped
     ports:
       - "80:80"
     depends_on:
       server:
-        condition: service_healthy
-      cube:
         condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:80/ || exit 1"]
@@ -151,12 +50,8 @@ services:
       retries: 3
       start_period: 5s
     networks:
-      - zeroapp-network
+      - zeroreports-network
 
 networks:
-  zeroapp-network:
+  zeroreports-network:
     driver: bridge
-
-volumes:
-  cubestore_data:
-    driver: local

@@ -1,87 +1,55 @@
 import type { PropsWithChildren } from 'react';
-import {
-  Box,
-  AppBar,
-  Toolbar,
-  Typography,
-  Drawer,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-  CssBaseline,
-} from '@mui/material';
-import {
-  MusicNote,
-  Album,
-  Person,
-  BarChart,
-} from '@mui/icons-material';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { Box, AppBar, Toolbar, Typography } from '@mui/material';
+import { Assessment } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 
-const drawerWidth = 240;
-
-const menuItems = [
-  { path: '/', label: 'Главная', icon: <BarChart /> },
-  { path: '/artists', label: 'Артисты', icon: <Person /> },
-  { path: '/tracks', label: 'Треки', icon: <MusicNote /> },
-  { path: '/releases', label: 'Релизы', icon: <Album /> },
-];
-
-export const Layout = ({ children }: PropsWithChildren) => {
+export function Layout({ children }: PropsWithChildren) {
   const navigate = useNavigate();
-  const location = useLocation();
 
   return (
-    <Box sx={{ display: 'flex' }}>
-      <CssBaseline />
-      <AppBar
-        position="fixed"
-        sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
-      >
+    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <AppBar position="sticky" elevation={0}>
         <Toolbar>
-          <Typography variant="h6" noWrap component="div">
-            🎵 ZeroApp
-          </Typography>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1,
+              cursor: 'pointer',
+            }}
+            onClick={() => navigate('/')}
+          >
+            <Assessment sx={{ color: 'primary.main' }} />
+            <Typography
+              variant="h6"
+              sx={{ fontWeight: 700, letterSpacing: '-0.02em' }}
+            >
+              ZeroReports
+            </Typography>
+          </Box>
         </Toolbar>
       </AppBar>
-
-      <Drawer
-        variant="permanent"
-        sx={{
-          width: drawerWidth,
-          flexShrink: 0,
-          '& .MuiDrawer-paper': {
-            width: drawerWidth,
-            boxSizing: 'border-box',
-          },
-        }}
+      <Box
+        component="main"
+        sx={{ flex: 1, py: 4, px: 3, maxWidth: 1200, mx: 'auto', width: '100%' }}
       >
-        <Toolbar />
-        <Box sx={{ overflow: 'auto' }}>
-          <List>
-            {menuItems.map((item) => (
-              <ListItem key={item.path} disablePadding>
-                <ListItemButton
-                  selected={location.pathname === item.path}
-                  onClick={() => navigate(item.path)}
-                >
-                  <ListItemIcon>{item.icon}</ListItemIcon>
-                  <ListItemText primary={item.label} />
-                </ListItemButton>
-              </ListItem>
-            ))}
-          </List>
-        </Box>
-      </Drawer>
-
-      <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
-        <Toolbar />
         {children}
+      </Box>
+      <Box
+        component="footer"
+        sx={(theme) => ({
+          py: 3,
+          px: 3,
+          textAlign: 'center',
+          borderTop: `1px solid ${theme.palette.surface.level2}`,
+        })}
+      >
+        <Typography variant="caption" sx={{ color: 'text.caption' }}>
+          ZeroReports
+        </Typography>
       </Box>
     </Box>
   );
-};
+}
 
 export default Layout;

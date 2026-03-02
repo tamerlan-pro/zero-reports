@@ -8,8 +8,14 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model TestMigration {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  note      String?
+model Report {
+  id          String   @id @default(uuid())
+  slug        String   @unique
+  token       String   @unique @default(uuid())
+  title       String
+  description String?
+  config      Json
+  isPublished Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

@@ -12,18 +12,18 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
+    "@fontsource/inter": "^5.2.5",
     "@mui/icons-material": "^7.3.7",
     "@mui/material": "^7.3.7",
-    "@mui/x-data-grid": "^8.25.0",
-    "@refinedev/core": "^5.0.8",
-    "@refinedev/mui": "^8.0.0",
-    "@refinedev/react-hook-form": "^5.0.4",
-    "@refinedev/react-router": "^2.0.3",
+    "@mui/x-charts-pro": "^8.5.0",
+    "@mui/x-data-grid-pro": "^8.25.0",
+    "@mui/x-license": "^8.5.0",
     "axios": "^1.13.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-hook-form": "^7.71.1",
-    "react-router-dom": "^7.12.0"
+    "react-markdown": "^10.1.0",
+    "react-router-dom": "^7.12.0",
+    "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
