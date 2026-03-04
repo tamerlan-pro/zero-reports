@@ -1,6 +1,8 @@
+import { useId } from 'react';
 import { Box, Paper, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { LineChart, BarChart, PieChart, ScatterChart } from '@mui/x-charts-pro';
+import { useDrawingArea } from '@mui/x-charts/hooks';
 import { Gauge } from '@mui/x-charts/Gauge';
 import { SparkLineChart } from '@mui/x-charts/SparkLineChart';
 import { RadarChart } from '@mui/x-charts/RadarChart';
@@ -8,6 +10,126 @@ import { Unstable_FunnelChart as FunnelChart } from '@mui/x-charts-pro/FunnelCha
 import { Heatmap } from '@mui/x-charts-pro/Heatmap';
 import type { ChartBlock as ChartBlockType } from '../../types/report';
 import { formatNumber } from '../../utils/format';
+import { resolveColor } from '../../utils/resolveColor';
+
+function darkenHex(hex: string, factor = 0.55): string {
+  const h = hex.replace('#', '');
+  const r = Math.round(parseInt(h.substring(0, 2), 16) * factor);
+  const g = Math.round(parseInt(h.substring(2, 4), 16) * factor);
+  const b = Math.round(parseInt(h.substring(4, 6), 16) * factor);
+  return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+}
+
+/**
+ * Unified SVG gradient definitions for charts.
+ *
+ * variant="fade"  — same color, opacity 100% → 10% (+ stroke gradient 100% → 35%)
+ * variant="tonal" — full opacity, color transitions from bright (400) to dark (200)
+ */
+function ChartGradient({
+  colors,
+  colorsDark,
+  uid,
+  variant,
+}: {
+  colors: string[];
+  colorsDark?: string[];
+  uid: string;
+  variant: 'fade' | 'tonal';
+}) {
+  const { top, height } = useDrawingArea();
+
+  if (variant === 'tonal') {
+    return (
+      <defs>
+        {colors.map((color, i) => (
+          <linearGradient
+            key={i}
+            id={`${uid}-${i}`}
+            x1="0"
+            x2="0"
+            y1="0"
+            y2="1"
+          >
+            <stop offset="0%" stopColor={color} stopOpacity={1} />
+            <stop offset="100%" stopColor={colorsDark?.[i] || darkenHex(color)} stopOpacity={1} />
+          </linearGradient>
+        ))}
+      </defs>
+    );
+  }
+
+  return (
+    <defs>
+      {colors.map((color, i) => (
+        <linearGradient
+          key={i}
+          id={`${uid}-${i}`}
+          x1="0"
+          x2="0"
+          y1={String(top)}
+          y2={String(top + height)}
+          gradientUnits="userSpaceOnUse"
+        >
+          <stop offset="0%" stopColor={color} stopOpacity={1} />
+          <stop offset="100%" stopColor={color} stopOpacity={0.1} />
+        </linearGradient>
+      ))}
+      {colors.map((color, i) => (
+        <linearGradient
+          key={`s${i}`}
+          id={`${uid}-s-${i}`}
+          x1="0"
+          x2="0"
+          y1={String(top)}
+          y2={String(top + height)}
+          gradientUnits="userSpaceOnUse"
+        >
+          <stop offset="0%" stopColor={color} stopOpacity={1} />
+          <stop offset="100%" stopColor={color} stopOpacity={0.35} />
+        </linearGradient>
+      ))}
+    </defs>
+  );
+}
+
+/**
+ * Radial gradient for pie / donut charts.
+ * Center (0%) = bright 400-weight, edge (100%) = dark 200-weight.
+ *
+ * MUI X Charts wraps pie arcs in <g transform="translate(cx, cy)">,
+ * so the local coordinate origin (0, 0) is the pie center.
+ */
+function PieGradient({
+  colors,
+  colorsDark,
+  uid,
+}: {
+  colors: string[];
+  colorsDark: string[];
+  uid: string;
+}) {
+  const { width, height } = useDrawingArea();
+  const r = Math.min(width, height) * 0.45;
+
+  return (
+    <defs>
+      {colors.map((color, i) => (
+        <radialGradient
+          key={i}
+          id={`${uid}-pie-${i}`}
+          cx="0"
+          cy="0"
+          r={String(r)}
+          gradientUnits="userSpaceOnUse"
+        >
+          <stop offset="0%" stopColor={colorsDark[i]} stopOpacity={1} />
+          <stop offset="100%" stopColor={color} stopOpacity={1} />
+        </radialGradient>
+      ))}
+    </defs>
+  );
+}
 
 interface Props {
   block: ChartBlockType;
@@ -15,11 +137,17 @@ interface Props {
 
 export function ChartBlock({ block }: Props) {
   const theme = useTheme();
+  const rawId = useId();
+  const uid = rawId.replace(/:/g, '');
   const chartColors = theme.custom.chartColors;
+  const chartColorPairs = theme.custom.chartColorPairs;
   const height = block.height || 350;
 
   const seriesColors = block.series.map(
-    (s, i) => s.color || chartColors[i % chartColors.length],
+    (s, i) => resolveColor(s.color, theme) || chartColors[i % chartColors.length],
+  );
+  const seriesColorsDark = seriesColors.map(
+    (c) => chartColorPairs[c] || darkenHex(c),
   );
 
   const legendProps = {
@@ -33,7 +161,22 @@ export function ChartBlock({ block }: Props) {
 
   const content = (() => {
     switch (block.chartType) {
-      case 'line':
+      case 'line': {
+        const hasArea = block.series.some((s) => s.area);
+        const areaSx = hasArea
+          ? block.series.reduce<Record<string, { fill: string }>>(
+              (acc, s, i) => {
+                if (s.area) {
+                  acc[`.MuiAreaElement-series-${uid}-${i}`] = {
+                    fill: `url(#${uid}-${i})`,
+                  };
+                }
+                return acc;
+              },
+              {},
+            )
+          : {};
+
         return (
           <LineChart
             dataset={block.data as Record<string, number | string>[]}
@@ -45,6 +188,7 @@ export function ChartBlock({ block }: Props) {
               },
             ]}
             series={block.series.map((s, i) => ({
+              id: `${uid}-${i}`,
               dataKey: s.dataKey,
               label: s.label,
               color: seriesColors[i],
@@ -57,17 +201,30 @@ export function ChartBlock({ block }: Props) {
             grid={{ horizontal: true }}
             {...legendProps}
             sx={{
-              '.MuiAreaElement-root': {
-                opacity: 0.15,
-              },
               '.MuiLineElement-root': {
                 strokeWidth: 2.5,
               },
+              ...areaSx,
             }}
-          />
+          >
+            {hasArea && (
+              <ChartGradient colors={seriesColors} uid={uid} variant="fade" />
+            )}
+          </LineChart>
+        );
+      }
+
+      case 'bar': {
+        const barSx = block.series.reduce<Record<string, { fill: string }>>(
+          (acc, _s, i) => {
+            acc[`.MuiBarElement-series-bar-${uid}-${i}`] = {
+              fill: `url(#${uid}-${i})`,
+            };
+            return acc;
+          },
+          {},
         );
 
-      case 'bar':
         return (
           <BarChart
             dataset={block.data as Record<string, number | string>[]}
@@ -79,6 +236,7 @@ export function ChartBlock({ block }: Props) {
               },
             ]}
             series={block.series.map((s, i) => ({
+              id: `bar-${uid}-${i}`,
               dataKey: s.dataKey,
               label: s.label,
               color: seriesColors[i],
@@ -88,10 +246,37 @@ export function ChartBlock({ block }: Props) {
             grid={{ horizontal: true }}
             borderRadius={6}
             {...legendProps}
-          />
+            sx={barSx}
+          >
+            <ChartGradient
+              colors={seriesColors}
+              colorsDark={seriesColorsDark}
+              uid={uid}
+              variant="tonal"
+            />
+          </BarChart>
+        );
+      }
+
+      case 'pie': {
+        const pieColors = block.data.map(
+          (d, i) =>
+            resolveColor(d.color as string, theme) ||
+            chartColors[i % chartColors.length],
+        );
+        const pieColorsDark = pieColors.map(
+          (c) => chartColorPairs[c] || darkenHex(c),
+        );
+        const pieSx = pieColors.reduce<Record<string, { fill: string }>>(
+          (acc, _, i) => {
+            acc[`& .MuiPieArc-root:nth-of-type(${i + 1})`] = {
+              fill: `url(#${uid}-pie-${i})`,
+            };
+            return acc;
+          },
+          {},
         );
 
-      case 'pie':
         return (
           <PieChart
             series={[
@@ -100,9 +285,7 @@ export function ChartBlock({ block }: Props) {
                   id: (d.id as number) ?? i,
                   value: d[block.series[0]?.dataKey || 'value'] as number,
                   label: (d.label as string) || `#${i}`,
-                  color:
-                    (d.color as string) ||
-                    chartColors[i % chartColors.length],
+                  color: pieColors[i],
                 })),
                 arcLabel: (item) => `${item.value}`,
                 arcLabelMinAngle: 25,
@@ -115,8 +298,16 @@ export function ChartBlock({ block }: Props) {
             ]}
             height={height}
             {...legendProps}
-          />
+            sx={pieSx}
+          >
+            <PieGradient
+              colors={pieColors}
+              colorsDark={pieColorsDark}
+              uid={uid}
+            />
+          </PieChart>
         );
+      }
 
       case 'scatter':
         return (
@@ -166,19 +357,42 @@ export function ChartBlock({ block }: Props) {
           </Box>
         );
 
-      case 'sparkline':
+      case 'sparkline': {
+        const sparkColor = resolveColor(block.sparklineColor, theme) || seriesColors[0];
+        const sparkArea = block.sparklineArea;
+        const isBar = block.sparklinePlotType === 'bar';
+
         return (
           <SparkLineChart
             data={block.sparklineData || []}
             height={height > 150 ? 150 : height}
             plotType={block.sparklinePlotType || 'line'}
-            area={block.sparklineArea}
-            color={block.sparklineColor || seriesColors[0]}
+            area={sparkArea}
+            color={sparkColor}
             curve="catmullRom"
             showTooltip
             showHighlight
-          />
+            sx={{
+              ...(sparkArea && {
+                '.MuiAreaElement-root': { fill: `url(#${uid}-0)` },
+              }),
+              ...(isBar && {
+                '.MuiBarElement-root': {
+                  fill: `url(#${uid}-0)`,
+                  stroke: `url(#${uid}-s-0)`,
+                  strokeWidth: 1,
+                  rx: 3,
+                  ry: 3,
+                },
+              }),
+            }}
+          >
+            {(sparkArea || isBar) && (
+              <ChartGradient colors={[sparkColor]} uid={uid} variant="fade" />
+            )}
+          </SparkLineChart>
         );
+      }
 
       case 'radar':
         return (
@@ -207,7 +421,7 @@ export function ChartBlock({ block }: Props) {
                   value: (d.value as number) ?? 0,
                   label: (d.label as string) || `#${i}`,
                   color:
-                    (d.color as string) ||
+                    resolveColor(d.color as string, theme) ||
                     chartColors[i % chartColors.length],
                 })),
                 curve: block.funnelCurve || 'bump',

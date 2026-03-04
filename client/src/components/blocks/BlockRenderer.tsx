@@ -8,6 +8,7 @@ import { TableBlock } from './TableBlock';
 import { DividerBlock } from './DividerBlock';
 import { CalloutBlock } from './CalloutBlock';
 import { GridBlock } from './GridBlock';
+import { UIShowcaseBlock } from './UIShowcaseBlock';
 
 interface Props {
   block: ReportBlock;
@@ -31,6 +32,8 @@ export function BlockRenderer({ block }: Props) {
       return <CalloutBlock block={block} />;
     case 'grid':
       return <GridBlock block={block} />;
+    case 'uiShowcase':
+      return <UIShowcaseBlock block={block} />;
     default:
       return (
         <Typography color="error">

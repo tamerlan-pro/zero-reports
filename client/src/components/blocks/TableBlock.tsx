@@ -14,12 +14,7 @@ import {
   ColumnsPanelTrigger,
   FilterPanelTrigger,
 } from '@mui/x-data-grid-pro';
-import SearchIcon from '@mui/icons-material/Search';
-import CancelIcon from '@mui/icons-material/Cancel';
-import FileDownloadIcon from '@mui/icons-material/FileDownload';
-import PrintIcon from '@mui/icons-material/Print';
-import ViewColumnIcon from '@mui/icons-material/ViewColumn';
-import FilterListIcon from '@mui/icons-material/FilterList';
+import { Icon } from '@iconify/react';
 import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
 import Tooltip from '@mui/material/Tooltip';
@@ -127,22 +122,22 @@ function CustomToolbar() {
     <Toolbar>
       <Tooltip title="Columns">
         <ColumnsPanelTrigger render={<ToolbarButton />}>
-          <ViewColumnIcon fontSize="small" />
+          <Icon icon="solar:tuning-2-bold-duotone" width={18} />
         </ColumnsPanelTrigger>
       </Tooltip>
       <Tooltip title="Filters">
         <FilterPanelTrigger render={<ToolbarButton />}>
-          <FilterListIcon fontSize="small" />
+          <Icon icon="solar:filter-bold-duotone" width={18} />
         </FilterPanelTrigger>
       </Tooltip>
       <Tooltip title="Export CSV">
         <ExportCsv render={<ToolbarButton />}>
-          <FileDownloadIcon fontSize="small" />
+          <Icon icon="solar:file-download-bold-duotone" width={18} />
         </ExportCsv>
       </Tooltip>
       <Tooltip title="Print">
         <ExportPrint render={<ToolbarButton />}>
-          <PrintIcon fontSize="small" />
+          <Icon icon="solar:printer-bold-duotone" width={18} />
         </ExportPrint>
       </Tooltip>
 
@@ -160,7 +155,7 @@ function CustomToolbar() {
                 input: {
                   startAdornment: (
                     <InputAdornment position="start">
-                      <SearchIcon fontSize="small" />
+                      <Icon icon="solar:magnifer-bold-duotone" width={18} />
                     </InputAdornment>
                   ),
                   endAdornment: controlProps.value ? (
@@ -171,7 +166,7 @@ function CustomToolbar() {
                         aria-label="Clear search"
                         material={{ sx: { marginRight: -0.75 } }}
                       >
-                        <CancelIcon fontSize="small" />
+                        <Icon icon="solar:close-circle-bold-duotone" width={18} />
                       </QuickFilterClear>
                     </InputAdornment>
                   ) : null,

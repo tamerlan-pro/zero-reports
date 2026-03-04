@@ -8,7 +8,7 @@ import {
   Button,
   Stack,
 } from '@mui/material';
-import { ErrorOutline, Inbox, Refresh } from '@mui/icons-material';
+import { Icon } from '@iconify/react';
 import { axiosInstance } from '../providers';
 import { Layout } from '../components/Layout';
 import { BlockRenderer } from '../components/blocks/BlockRenderer';
@@ -69,13 +69,14 @@ export function ReportViewerPage() {
             gap: 2,
           }}
         >
-          <ErrorOutline
+          <Box
             sx={(theme) => ({
-              fontSize: 64,
               color: 'text.secondary',
               opacity: theme.custom.iconOpacity.emptyState,
             })}
-          />
+          >
+            <Icon icon="solar:danger-circle-bold-duotone" width={64} />
+          </Box>
           <Typography variant="h5" color="text.secondary">
             Отчет не найден
           </Typography>
@@ -109,7 +110,7 @@ export function ReportViewerPage() {
               <Button
                 color="inherit"
                 size="small"
-                startIcon={<Refresh />}
+                startIcon={<Icon icon="solar:refresh-bold-duotone" width={20} />}
                 onClick={fetchReport}
               >
                 Повторить
@@ -132,14 +133,15 @@ export function ReportViewerPage() {
     return (
       <Layout>
         <Box sx={{ textAlign: 'center', py: 10 }}>
-          <Inbox
+          <Box
             sx={(theme) => ({
-              fontSize: 64,
               color: 'text.secondary',
               opacity: theme.custom.iconOpacity.emptyState,
               mb: 2,
             })}
-          />
+          >
+            <Icon icon="solar:inbox-bold-duotone" width={64} />
+          </Box>
           <Typography variant="h6" color="text.secondary">
             Отчет пока не содержит данных
           </Typography>

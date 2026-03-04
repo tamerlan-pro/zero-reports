@@ -1,5 +1,5 @@
 import { Box, Typography, Button } from '@mui/material';
-import { SearchOff } from '@mui/icons-material';
+import { Icon } from '@iconify/react';
 import { Layout } from '../components/Layout';
 
 export function NotFoundPage() {
@@ -15,13 +15,14 @@ export function NotFoundPage() {
           gap: 2,
         }}
       >
-        <SearchOff
+        <Box
           sx={(theme) => ({
-            fontSize: 64,
             color: 'text.secondary',
             opacity: theme.custom.iconOpacity.emptyState,
           })}
-        />
+        >
+          <Icon icon="solar:magnifer-zoom-in-bold-duotone" width={64} />
+        </Box>
         <Typography variant="h4" color="text.secondary">
           404
         </Typography>

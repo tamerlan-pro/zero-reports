@@ -1,34 +1,22 @@
 import { Box, Paper, Typography, Grid } from '@mui/material';
-import { styled, alpha } from '@mui/material/styles';
-import {
-  TrendingUp,
-  TrendingDown,
-  TrendingFlat,
-  People,
-  AccountBalance,
-  Percent,
-  AttachMoney,
-  Headphones,
-  ShoppingCart,
-  Visibility,
-  Speed,
-  Star,
-} from '@mui/icons-material';
+import { styled, alpha, useTheme } from '@mui/material/styles';
+import { Icon } from '@iconify/react';
 import type { MetricsBlock as MetricsBlockType, MetricItem } from '../../types/report';
+import { resolveColor } from '../../utils/resolveColor';
 
-const iconMap: Record<string, React.ElementType> = {
-  trending_up: TrendingUp,
-  trending_down: TrendingDown,
-  trending_flat: TrendingFlat,
-  people: People,
-  account_balance: AccountBalance,
-  percent: Percent,
-  attach_money: AttachMoney,
-  headphones: Headphones,
-  shopping_cart: ShoppingCart,
-  visibility: Visibility,
-  speed: Speed,
-  star: Star,
+const iconMap: Record<string, string> = {
+  trending_up: 'solar:arrow-right-up-bold-duotone',
+  trending_down: 'solar:arrow-right-down-bold-duotone',
+  trending_flat: 'solar:arrow-right-bold-duotone',
+  people: 'solar:users-group-rounded-bold-duotone',
+  account_balance: 'solar:buildings-2-bold-duotone',
+  percent: 'solar:sale-bold-duotone',
+  attach_money: 'solar:dollar-minimalistic-bold-duotone',
+  headphones: 'solar:headphones-round-bold-duotone',
+  shopping_cart: 'solar:cart-large-bold-duotone',
+  visibility: 'solar:eye-bold-duotone',
+  speed: 'solar:speedometer-bold-duotone',
+  star: 'solar:star-bold-duotone',
 };
 
 interface MetricCardOwnerState {
@@ -48,9 +36,9 @@ const MetricCardRoot = styled(Paper, {
   position: 'relative',
   overflow: 'hidden',
   '&:hover': {
-    borderColor: theme.palette.surface.level6,
+    borderColor: 'rgba(43, 43, 45, 1)',
     borderLeftColor: ownerState.accentColor,
-    boxShadow: theme.shadows[4],
+    boxShadow: '0px 6px 14px 0px rgba(105, 104, 104, 0.35)',
     transform: 'translateY(-1px)',
   },
   '&::before': {
@@ -65,17 +53,19 @@ const MetricCardRoot = styled(Paper, {
   },
 }));
 
+const deltaIconMap: Record<string, string> = {
+  positive: 'solar:arrow-right-up-bold-duotone',
+  negative: 'solar:arrow-right-down-bold-duotone',
+};
+const DELTA_ICON_DEFAULT = 'solar:arrow-right-bold-duotone';
+
 function MetricCard({ item }: { item: MetricItem }) {
-  const accentColor = item.color || '#42a5f5';
+  const theme = useTheme();
+  const accentColor = resolveColor(item.color, theme) || theme.palette.primary.main;
 
-  const IconComponent = item.icon ? iconMap[item.icon] || TrendingFlat : null;
+  const iconName = item.icon ? iconMap[item.icon] || DELTA_ICON_DEFAULT : null;
 
-  const DeltaIcon =
-    item.deltaType === 'positive'
-      ? TrendingUp
-      : item.deltaType === 'negative'
-        ? TrendingDown
-        : TrendingFlat;
+  const deltaIcon = deltaIconMap[item.deltaType || ''] || DELTA_ICON_DEFAULT;
 
   const deltaColorToken =
     item.deltaType === 'positive'
@@ -86,15 +76,16 @@ function MetricCard({ item }: { item: MetricItem }) {
 
   return (
     <MetricCardRoot ownerState={{ accentColor }}>
-      {IconComponent && (
+      {iconName && (
         <Box
           sx={(theme) => ({
             color: accentColor,
             opacity: theme.custom.iconOpacity.muted,
             mt: 0.5,
+            display: 'flex',
           })}
         >
-          <IconComponent fontSize="medium" />
+          <Icon icon={iconName} width={24} />
         </Box>
       )}
       <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -121,8 +112,8 @@ function MetricCard({ item }: { item: MetricItem }) {
           {item.value}
         </Typography>
         {item.delta && (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <DeltaIcon sx={{ fontSize: 16, color: deltaColorToken }} />
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: deltaColorToken }}>
+            <Icon icon={deltaIcon} width={16} />
             <Typography
               variant="caption"
               sx={{ color: deltaColorToken, fontWeight: 500, fontSize: '0.813rem' }}

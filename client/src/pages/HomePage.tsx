@@ -10,7 +10,7 @@ import {
   Tooltip,
   Alert,
 } from '@mui/material';
-import { ContentCopy, OpenInNew, Assessment } from '@mui/icons-material';
+import { Icon } from '@iconify/react';
 import { axiosInstance } from '../providers';
 import { Layout } from '../components/Layout';
 import type { ReportListItem } from '../types/report';
@@ -62,14 +62,15 @@ export function HomePage() {
         </Grid>
       ) : reports.length === 0 ? (
         <Box sx={{ textAlign: 'center', py: 10 }}>
-          <Assessment
+          <Box
             sx={(theme) => ({
-              fontSize: 64,
               color: 'text.secondary',
               opacity: theme.custom.iconOpacity.emptyState,
               mb: 2,
             })}
-          />
+          >
+            <Icon icon="solar:chart-square-bold-duotone" width={64} />
+          </Box>
           <Typography variant="h6" color="text.secondary">
             Пока нет отчетов
           </Typography>
@@ -82,7 +83,7 @@ export function HomePage() {
           {reports.map((report) => (
             <Grid key={report.id} size={{ xs: 12, sm: 6, md: 4 }}>
               <Paper
-                sx={(theme) => ({
+                sx={{
                   p: 3,
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',
@@ -90,11 +91,11 @@ export function HomePage() {
                   display: 'flex',
                   flexDirection: 'column',
                   '&:hover': {
-                    borderColor: theme.palette.surface.level7,
-                    boxShadow: theme.shadows[8],
+                    borderColor: 'rgba(43, 43, 45, 1)',
+                    boxShadow: '0px 6px 14px 0px rgba(105, 104, 104, 0.35)',
                     transform: 'translateY(-2px)',
                   },
-                })}
+                }}
                 onClick={() => navigate(`/r/${report.token}`)}
               >
                 <Typography variant="h6" sx={{ mb: 1, lineHeight: 1.3 }}>
@@ -117,14 +118,14 @@ export function HomePage() {
                   </Typography>
                 )}
                 <Box
-                  sx={(theme) => ({
+                  sx={{
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     mt: 'auto',
                     pt: 2,
-                    borderTop: `1px solid ${theme.palette.surface.level2}`,
-                  })}
+                    borderTop: '0.5px solid rgba(43, 43, 45, 0.8)',
+                  }}
                 >
                   <Typography variant="caption" sx={{ color: 'text.caption' }}>
                     {new Date(report.createdAt).toLocaleDateString('ru-RU', {
@@ -140,7 +141,7 @@ export function HomePage() {
                         onClick={(e) => copyLink(report.token, e)}
                         sx={{ color: 'text.secondary' }}
                       >
-                        <ContentCopy fontSize="small" />
+                        <Icon icon="solar:copy-bold-duotone" width={18} />
                       </IconButton>
                     </Tooltip>
                     <Tooltip title="Открыть">
@@ -152,7 +153,7 @@ export function HomePage() {
                           navigate(`/r/${report.token}`);
                         }}
                       >
-                        <OpenInNew fontSize="small" />
+                        <Icon icon="solar:square-arrow-right-up-bold-duotone" width={18} />
                       </IconButton>
                     </Tooltip>
                   </Box>

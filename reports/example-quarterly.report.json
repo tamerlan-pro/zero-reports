@@ -10,10 +10,10 @@
         "type": "metrics",
         "columns": 4,
         "items": [
-          { "label": "Выручка", "value": "12.4M ₽", "delta": "+15%", "deltaType": "positive", "icon": "attach_money", "color": "#42a5f5" },
-          { "label": "Расходы", "value": "8.1M ₽", "delta": "+3%", "deltaType": "negative", "icon": "account_balance", "color": "#ef5350" },
-          { "label": "Клиенты", "value": 1240, "delta": "+120", "deltaType": "positive", "icon": "people", "color": "#66bb6a" },
-          { "label": "Конверсия", "value": "3.2%", "delta": "-0.1%", "deltaType": "neutral", "icon": "percent", "color": "#ffa726" }
+          { "label": "Выручка", "value": "12.4M ₽", "delta": "+15%", "deltaType": "positive", "icon": "attach_money", "color": "primary" },
+          { "label": "Расходы", "value": "8.1M ₽", "delta": "+3%", "deltaType": "negative", "icon": "account_balance", "color": "danger" },
+          { "label": "Клиенты", "value": 1240, "delta": "+120", "deltaType": "positive", "icon": "people", "color": "success" },
+          { "label": "Конверсия", "value": "3.2%", "delta": "-0.1%", "deltaType": "neutral", "icon": "percent", "color": "warning" }
         ]
       },
       { "type": "divider" },
@@ -24,8 +24,8 @@
         "height": 400,
         "xAxis": { "dataKey": "month", "label": "Месяц", "scaleType": "band" },
         "series": [
-          { "dataKey": "revenue", "label": "Выручка", "color": "#42a5f5", "area": true },
-          { "dataKey": "costs", "label": "Расходы", "color": "#ef5350" }
+          { "dataKey": "revenue", "label": "Выручка", "color": "primary", "area": true },
+          { "dataKey": "costs", "label": "Расходы", "color": "danger" }
         ],
         "data": [
           { "month": "Январь", "revenue": 3800000, "costs": 2600000 },
@@ -56,7 +56,7 @@
             "chartType": "bar",
             "height": 320,
             "xAxis": { "dataKey": "region", "scaleType": "band" },
-            "series": [{ "dataKey": "revenue", "label": "Выручка", "color": "#42a5f5" }],
+            "series": [{ "dataKey": "revenue", "label": "Выручка", "color": "primary" }],
             "data": [
               { "region": "Москва", "revenue": 5200000 },
               { "region": "СПб", "revenue": 3100000 },

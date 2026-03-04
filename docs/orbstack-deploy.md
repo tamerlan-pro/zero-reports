@@ -20,10 +20,18 @@ LOCAL_PROJECT_PATH = /Volumes/Thunderlan/Yandex Drive/Yandex.Disk.localized/0to8
 OrbStack VM — Ubuntu внутри OrbStack на рабочем Mac.
 
 **Сетевые особенности OrbStack:**
-- **SSH** → используй `zero-reports.orb.local` (OrbStack резолвит `.orb.local` через внутренний DNS)
-- **HTTP (curl, браузер)** → используй `zero-reports.orb.local` (OrbStack резолвит домен VM)
+- **SSH** → используй `zero-reports.orb.local` (резолвится через `/etc/hosts` → `192.168.139.116`)
+- **HTTP (curl, браузер)** → используй `zero-reports.orb.local`
 - **Внутри VM** → OrbStack CLI: `orb run -m zero-reports <command>` (рекомендуется, не требует пароля)
-- IP адреса VM (192.168.13x.x) **не маршрутизируются** напрямую с macOS — не используй их
+
+**ВАЖНО — Сетевой fix (bridge subnet):**
+OrbStack's DHCP назначает VM IP в подсети `192.168.139.0/24`, но bridge100 на macOS — в `192.168.128.0/24`.
+Из-за этого VM недоступна с macOS по умолчанию. Применены два постоянных исправления:
+1. **На macOS**: LaunchDaemon `com.orbstack.route-fix` добавляет маршрут `192.168.139.0/24 → bridge100` при загрузке
+2. **На macOS**: запись в `/etc/hosts`: `192.168.139.116  zero-reports.orb.local`
+3. **На VM**: systemd-сервис `bridge-ip.service` добавляет обратный маршрут `192.168.128.0/24 dev eth0`
+
+Если после перезагрузки macOS или OrbStack сеть снова недоступна — см. TROUBLESHOOTING → "Сеть OrbStack не работает".
 
 **ВАЖНО: SSH через `sshpass` может зависать на этой VM. Используй `orb run -m zero-reports` для выполнения команд.**
 
@@ -304,6 +312,38 @@ orb run -m zero-reports bash -c '
 
 ---
 
+### Проблема: Сеть OrbStack не работает (VM недоступна с macOS)
+
+**Симптомы:** `curl http://zero-reports.orb.local/` зависает, ping 100% packet loss
+
+**Причина:** OrbStack's bridge100 на macOS в подсети `192.168.128.0/24`, а VM получает DHCP-адрес в `192.168.139.0/24`. Подсети не совпадают → нет маршрута.
+
+**Решение — проверить и восстановить:**
+```bash
+# 1. Проверить маршрут на macOS (должна быть строка 192.168.139 → bridge100)
+netstat -rn | grep 192.168.139
+
+# 2. Если маршрута нет — добавить (потребует пароль администратора macOS)
+osascript -e 'do shell script "route add -net 192.168.139.0/24 -interface bridge100" with administrator privileges'
+
+# 3. Проверить обратный маршрут на VM
+orb run -m zero-reports bash -c 'ip route show | grep 192.168.128'
+
+# 4. Если маршрута нет — перезапустить сервис
+orb run -m zero-reports sudo bash -c 'systemctl start bridge-ip.service'
+
+# 5. Проверить /etc/hosts на macOS (должна быть строка: 192.168.139.116  zero-reports.orb.local)
+grep zero-reports /etc/hosts
+
+# 6. Проверить
+ping -c 1 192.168.139.116
+curl -s http://zero-reports.orb.local/api/health
+```
+
+**Требуемые permissions:** `all`
+
+---
+
 ### Проблема: Конфликт портов
 
 **Симптомы:** `Bind for 0.0.0.0:80: address already in use`
@@ -453,9 +493,10 @@ ENVEOF
 | Docker Compose | v5.1.0 |
 | Containers | 3 (postgres, server, client) |
 
-**Важно:** Для выполнения команд используй `orb run -m zero-reports`. HTTP (curl/браузер) — через `zero-reports.orb.local`.
-IP адреса VM (192.168.13x.x) не маршрутизируются с macOS — не используй.
+**Важно:** Для выполнения команд используй `orb run -m zero-reports`. HTTP (curl/браузер) — через `zero-reports.orb.local` (→ `192.168.139.116`).
+
+**Сетевой fix:** Маршрут macOS → VM через LaunchDaemon, обратный маршрут VM → macOS через systemd. DNS через `/etc/hosts`.
 
 ---
 
-**Последнее обновление:** 2026-03-02
+**Последнее обновление:** 2026-03-04

@@ -16,6 +16,7 @@ export interface MetricItem {
   delta?: string;
   deltaType?: 'positive' | 'negative' | 'neutral';
   icon?: string;
+  /** Semantic token ("primary", "danger", "success.400"), hex ("#006FEE"), or omit for theme default */
   color?: string;
 }
 
@@ -28,6 +29,7 @@ export interface MetricsBlock {
 export interface ChartSeries {
   dataKey: string;
   label?: string;
+  /** Semantic token ("primary", "danger", "success.400"), hex ("#006FEE"), or omit for theme default */
   color?: string;
   area?: boolean;
 }
@@ -64,6 +66,7 @@ export interface ChartBlock {
   // SparkLine
   sparklineData?: number[];
   sparklinePlotType?: 'line' | 'bar';
+  /** Semantic token ("primary", "danger", "success.400"), hex ("#006FEE"), or omit for theme default */
   sparklineColor?: string;
   sparklineArea?: boolean;
 
@@ -116,6 +119,24 @@ export interface DividerBlock {
   type: 'divider';
 }
 
+export interface UIShowcaseBlock {
+  type: 'uiShowcase';
+  title?: string;
+  sections?: (
+    | 'buttons'
+    | 'inputs'
+    | 'selection'
+    | 'chips'
+    | 'progress'
+    | 'navigation'
+    | 'avatars'
+    | 'accordion'
+    | 'datePickers'
+    | 'treeView'
+    | 'alerts'
+  )[];
+}
+
 export interface CalloutBlock {
   type: 'callout';
   severity: 'info' | 'success' | 'warning' | 'error';
@@ -138,7 +159,8 @@ export type ReportBlock =
   | TableBlock
   | DividerBlock
   | CalloutBlock
-  | GridBlock;
+  | GridBlock
+  | UIShowcaseBlock;
 
 export interface ReportConfig {
   blocks: ReportBlock[];

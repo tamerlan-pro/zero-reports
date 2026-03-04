@@ -1,6 +1,6 @@
 import type { PropsWithChildren } from 'react';
 import { Box, AppBar, Toolbar, Typography } from '@mui/material';
-import { Assessment } from '@mui/icons-material';
+import { Icon } from '@iconify/react';
 import { useNavigate } from 'react-router-dom';
 
 export function Layout({ children }: PropsWithChildren) {
@@ -19,7 +19,9 @@ export function Layout({ children }: PropsWithChildren) {
             }}
             onClick={() => navigate('/')}
           >
-            <Assessment sx={{ color: 'primary.main' }} />
+            <Box component="span" sx={{ color: 'primary.main', display: 'flex' }}>
+              <Icon icon="solar:chart-square-bold-duotone" width={24} />
+            </Box>
             <Typography
               variant="h6"
               sx={{ fontWeight: 700, letterSpacing: '-0.02em' }}
