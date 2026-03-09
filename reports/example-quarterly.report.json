@@ -1,36 +1,43 @@
 {
   "slug": "q1-2026-revenue",
-  "title": "Выручка Q1 2026",
-  "description": "Квартальный отчет по выручке и ключевым метрикам",
+  "title": { "ru": "Выручка Q1 2026", "en": "Revenue Q1 2026" },
+  "description": { "ru": "Квартальный отчет по выручке и ключевым метрикам", "en": "Quarterly revenue report and key metrics" },
   "config": {
     "blocks": [
-      { "type": "heading", "level": 1, "content": "Итоги первого квартала" },
-      { "type": "markdown", "content": "Ниже представлены ключевые показатели компании за первый квартал 2026 года. Все данные актуальны на момент формирования отчета." },
+      {
+        "type": "heading",
+        "level": 1,
+        "content": { "ru": "Итоги первого квартала", "en": "Q1 Results" }
+      },
+      {
+        "type": "markdown",
+        "content": { "ru": "Ниже представлены ключевые показатели компании за первый квартал 2026 года. Все данные актуальны на момент формирования отчета.", "en": "Below are the key company metrics for Q1 2026. All data is current as of the report generation date." }
+      },
       {
         "type": "metrics",
         "columns": 4,
         "items": [
-          { "label": "Выручка", "value": "12.4M ₽", "delta": "+15%", "deltaType": "positive", "icon": "attach_money", "color": "primary" },
-          { "label": "Расходы", "value": "8.1M ₽", "delta": "+3%", "deltaType": "negative", "icon": "account_balance", "color": "danger" },
-          { "label": "Клиенты", "value": 1240, "delta": "+120", "deltaType": "positive", "icon": "people", "color": "success" },
-          { "label": "Конверсия", "value": "3.2%", "delta": "-0.1%", "deltaType": "neutral", "icon": "percent", "color": "warning" }
+          { "label": { "ru": "Выручка", "en": "Revenue" }, "value": "12.4M ₽", "delta": "+15%", "deltaType": "positive", "icon": "attach_money", "color": "primary" },
+          { "label": { "ru": "Расходы", "en": "Expenses" }, "value": "8.1M ₽", "delta": "+3%", "deltaType": "negative", "icon": "account_balance", "color": "danger" },
+          { "label": { "ru": "Клиенты", "en": "Clients" }, "value": 1240, "delta": "+120", "deltaType": "positive", "icon": "people", "color": "success" },
+          { "label": { "ru": "Конверсия", "en": "Conversion" }, "value": "3.2%", "delta": "-0.1%", "deltaType": "neutral", "icon": "percent", "color": "warning" }
         ]
       },
       { "type": "divider" },
       {
         "type": "chart",
-        "title": "Динамика выручки по месяцам",
+        "title": { "ru": "Динамика выручки по месяцам", "en": "Monthly Revenue Dynamics" },
         "chartType": "line",
         "height": 400,
-        "xAxis": { "dataKey": "month", "label": "Месяц", "scaleType": "band" },
+        "xAxis": { "dataKey": "month", "label": { "ru": "Месяц", "en": "Month" }, "scaleType": "band" },
         "series": [
-          { "dataKey": "revenue", "label": "Выручка", "color": "primary", "area": true },
-          { "dataKey": "costs", "label": "Расходы", "color": "danger" }
+          { "dataKey": "revenue", "label": { "ru": "Выручка", "en": "Revenue" }, "color": "primary", "area": true },
+          { "dataKey": "costs", "label": { "ru": "Расходы", "en": "Expenses" }, "color": "danger" }
         ],
         "data": [
-          { "month": "Январь", "revenue": 3800000, "costs": 2600000 },
-          { "month": "Февраль", "revenue": 4100000, "costs": 2700000 },
-          { "month": "Март", "revenue": 4500000, "costs": 2800000 }
+          { "month": { "ru": "Январь", "en": "January" }, "revenue": 3800000, "costs": 2600000 },
+          { "month": { "ru": "Февраль", "en": "February" }, "revenue": 4100000, "costs": 2700000 },
+          { "month": { "ru": "Март", "en": "March" }, "revenue": 4500000, "costs": 2800000 }
         ]
       },
       {
@@ -40,27 +47,27 @@
         "blocks": [
           {
             "type": "chart",
-            "title": "Выручка по продуктам",
+            "title": { "ru": "Выручка по продуктам", "en": "Revenue by Product" },
             "chartType": "pie",
             "height": 320,
-            "series": [{ "dataKey": "value", "label": "Доля" }],
+            "series": [{ "dataKey": "value", "label": { "ru": "Доля", "en": "Share" } }],
             "data": [
-              { "id": 0, "label": "Продукт A", "value": 45 },
-              { "id": 1, "label": "Продукт B", "value": 30 },
-              { "id": 2, "label": "Продукт C", "value": 25 }
+              { "id": 0, "label": { "ru": "Продукт A", "en": "Product A" }, "value": 45 },
+              { "id": 1, "label": { "ru": "Продукт B", "en": "Product B" }, "value": 30 },
+              { "id": 2, "label": { "ru": "Продукт C", "en": "Product C" }, "value": 25 }
             ]
           },
           {
             "type": "chart",
-            "title": "Выручка по регионам",
+            "title": { "ru": "Выручка по регионам", "en": "Revenue by Region" },
             "chartType": "bar",
             "height": 320,
             "xAxis": { "dataKey": "region", "scaleType": "band" },
-            "series": [{ "dataKey": "revenue", "label": "Выручка", "color": "primary" }],
+            "series": [{ "dataKey": "revenue", "label": { "ru": "Выручка", "en": "Revenue" }, "color": "primary" }],
             "data": [
-              { "region": "Москва", "revenue": 5200000 },
-              { "region": "СПб", "revenue": 3100000 },
-              { "region": "Регионы", "revenue": 4100000 }
+              { "region": { "ru": "Москва", "en": "Moscow" }, "revenue": 5200000 },
+              { "region": { "ru": "СПб", "en": "St. Petersburg" }, "revenue": 3100000 },
+              { "region": { "ru": "Регионы", "en": "Regions" }, "revenue": 4100000 }
             ]
           }
         ]
@@ -68,19 +75,19 @@
       {
         "type": "callout",
         "severity": "info",
-        "title": "Примечание",
-        "content": "Данные актуальны на 01.03.2026. Следующее обновление — 01.04.2026."
+        "title": { "ru": "Примечание", "en": "Note" },
+        "content": { "ru": "Данные актуальны на 01.03.2026. Следующее обновление — 01.04.2026.", "en": "Data is current as of 03/01/2026. Next update — 04/01/2026." }
       },
       {
         "type": "table",
-        "title": "Детализация по клиентам",
+        "title": { "ru": "Детализация по клиентам", "en": "Client Details" },
         "pageSize": 10,
         "columns": [
-          { "field": "name", "headerName": "Клиент", "flex": 1 },
-          { "field": "revenue", "headerName": "Выручка, ₽", "width": 150, "type": "number" },
-          { "field": "deals", "headerName": "Сделок", "width": 120, "type": "number" },
-          { "field": "conversion", "headerName": "Конверсия", "width": 130 },
-          { "field": "status", "headerName": "Статус", "width": 130, "renderAs": "chip" }
+          { "field": "name", "headerName": { "ru": "Клиент", "en": "Client" }, "flex": 1 },
+          { "field": "revenue", "headerName": { "ru": "Выручка, ₽", "en": "Revenue, ₽" }, "width": 150, "type": "number" },
+          { "field": "deals", "headerName": { "ru": "Сделок", "en": "Deals" }, "width": 120, "type": "number" },
+          { "field": "conversion", "headerName": { "ru": "Конверсия", "en": "Conversion" }, "width": 130 },
+          { "field": "status", "headerName": { "ru": "Статус", "en": "Status" }, "width": 130, "renderAs": "chip" }
         ],
         "rows": [
           { "id": 1, "name": "ООО Альфа", "revenue": 2400000, "deals": 12, "conversion": "4.2%", "status": "active" },

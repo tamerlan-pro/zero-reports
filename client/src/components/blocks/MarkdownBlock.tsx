@@ -1,13 +1,17 @@
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Box, Typography, Link } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 import type { MarkdownBlock as MarkdownBlockType } from '../../types/report';
+import { resolveLocale } from '../../utils/locale';
 
 interface Props {
   block: MarkdownBlockType;
 }
 
-export function MarkdownBlock({ block: { content } }: Props) {
+export function MarkdownBlock({ block: { content: rawContent } }: Props) {
+  const { i18n } = useTranslation();
+  const content = resolveLocale(rawContent, i18n.language);
   return (
     <Box
       sx={(theme) => ({
@@ -28,13 +32,13 @@ export function MarkdownBlock({ block: { content } }: Props) {
           backgroundColor: theme.palette.surface.level3,
           px: 0.75,
           py: 0.25,
-          borderRadius: '4px',
-          fontSize: '0.875em',
+          borderRadius: `${theme.heroui.radius.small / 2}px`,
+          fontSize: theme.heroui.typography.small.fontSize,
         },
         '& pre': {
           backgroundColor: theme.palette.surface.level2,
           p: 2,
-          borderRadius: '8px',
+          borderRadius: `${theme.heroui.radius.small}px`,
           overflow: 'auto',
           '& code': { backgroundColor: 'transparent', p: 0 },
         },
@@ -58,7 +62,10 @@ export function MarkdownBlock({ block: { content } }: Props) {
           borderTop: `1px solid ${theme.palette.surface.level4}`,
           my: 3,
         },
-        '& img': { maxWidth: '100%', borderRadius: '8px' },
+        '& img': {
+          maxWidth: '100%',
+          borderRadius: `${theme.heroui.radius.small}px`,
+        },
       })}
     >
       <ReactMarkdown

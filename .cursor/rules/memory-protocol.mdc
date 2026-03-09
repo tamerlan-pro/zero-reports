@@ -1,0 +1,65 @@
+---
+description: Automatic MemoryGraph usage via MCP for persistent project memory
+alwaysApply: true
+---
+
+# Memory Protocol (MemoryGraph MCP)
+
+**AUTO-TRIGGER**: At the start of EVERY new task or conversation, immediately call `recall_memories` before doing anything else.
+
+Use the `user-memorygraph` MCP server to maintain persistent project context across sessions.
+
+## On Every New Task (MANDATORY — do this first)
+
+1. Call `recall_memories` with a query describing the task area to load relevant context.
+2. If searching for acronyms, exact terms, or tags — use `search_memories` instead.
+
+```
+CallMcpTool: server="user-memorygraph", toolName="recall_memories"
+  arguments: { "query": "<task description>" }
+```
+
+## After Important Decisions (MANDATORY — do this after)
+
+Store a memory after any of these events:
+- Architectural decision
+- Bug fix or error resolution
+- Technology/library choice
+- Non-obvious pattern or workaround
+- Configuration or deployment change
+
+```
+CallMcpTool: server="user-memorygraph", toolName="store_memory"
+  arguments: {
+    "type": "solution" | "decision" | "fix" | "code_pattern" | ...,
+    "title": "Short descriptive title",
+    "content": "What was decided, why, and what alternatives were rejected",
+    "tags": ["relevant", "tags"],
+    "importance": 0.7
+  }
+```
+
+## Content Guidelines
+
+When saving memory always include:
+- **What** was decided or done
+- **Why** this approach was chosen
+- **Alternatives** that were considered and rejected
+- **Tags** — always add acronyms and key terms as tags for reliable retrieval
+
+## Link Related Memories
+
+When a new memory relates to an existing one, create a relationship:
+
+```
+CallMcpTool: server="user-memorygraph", toolName="create_relationship"
+  arguments: {
+    "from_memory_id": "<new_id>",
+    "to_memory_id": "<existing_id>",
+    "relationship_type": "SOLVES" | "CAUSES" | "RELATED_TO" | "REQUIRES"
+  }
+```
+
+## Available Memory Types
+
+`task`, `code_pattern`, `problem`, `solution`, `project`, `technology`, `error`, `fix`, `command`, `file_context`, `workflow`, `general`, `conversation`

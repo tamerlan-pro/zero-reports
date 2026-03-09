@@ -12,8 +12,8 @@ model Report {
   id          String   @id @default(uuid())
   slug        String   @unique
   token       String   @unique @default(uuid())
-  title       String
-  description String?
+  title       Json
+  description Json?
   config      Json
   isPublished Boolean  @default(true)
   createdAt   DateTime @default(now())

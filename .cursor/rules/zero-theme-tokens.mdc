@@ -1,0 +1,234 @@
+---
+description: Справочник токенов @zero/theme — полная карта theme.heroui, theme.custom, theme.palette.surface, правила расширения, checklist перед PR
+globs: client/src/**/*.{ts,tsx},packages/zero-theme/src/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# Zero Theme — Справочник токенов
+
+Импорт темы: `import { useTheme } from '@mui/material/styles'` → `const theme = useTheme()`.
+Статические токены доступны напрямую: `import { heroui, custom } from '@zero/theme'`.
+
+---
+
+## `theme.heroui` — базовые дизайн-токены
+
+### Цветовые шкалы (50–900)
+
+```ts
+theme.heroui.primary[400]    // основной акцент
+theme.heroui.success[400]    // успех
+theme.heroui.warning[400]    // предупреждение
+theme.heroui.danger[400]     // ошибка
+theme.heroui.secondary[400]  // вторичный
+theme.heroui.default[400]    // нейтральный
+```
+
+### Layout-базовые цвета
+
+```ts
+theme.heroui.layout.background   // '#070809' — фон страницы
+theme.heroui.layout.foreground   // основной текст
+theme.heroui.layout.divider      // разделитель
+theme.heroui.layout.focus        // цвет фокуса
+theme.heroui.content[1..4]       // слои поверхностей (#131315 → светлее)
+```
+
+### Типографика
+
+```ts
+theme.heroui.typography.fontFamily  // 'Inter, -apple-system, ...'
+theme.heroui.typography.tiny.fontSize    // '0.65rem'
+theme.heroui.typography.tiny.lineHeight
+theme.heroui.typography.small.fontSize   // '0.75rem'
+theme.heroui.typography.medium.fontSize  // '0.875rem'
+theme.heroui.typography.large.fontSize   // '1rem'
+```
+
+### Тени
+
+```ts
+theme.heroui.shadows.sm   theme.heroui.shadows.base
+theme.heroui.shadows.md   theme.heroui.shadows.lg
+theme.heroui.shadows.xl   theme.heroui.shadows['2xl']
+theme.heroui.shadows.inner
+```
+
+### Переходы
+
+```ts
+theme.heroui.transitions.fast    // '150ms cubic-bezier(0.4, 0, 0.2, 1)'
+theme.heroui.transitions.normal  // '200ms ease'
+theme.heroui.transitions.slow    // '300ms ease-in-out'
+theme.heroui.transitions.duration.fast    // 150  (ms, number)
+theme.heroui.transitions.duration.normal  // 200
+theme.heroui.transitions.duration.slow    // 300
+```
+
+### Радиусы
+
+```ts
+theme.heroui.radius.small   // px
+theme.heroui.radius.medium
+theme.heroui.radius.large
+theme.heroui.radius.full    // 9999
+```
+
+---
+
+## `theme.palette` — семантические цвета MUI
+
+```ts
+theme.palette.primary.main       theme.palette.primary.light
+theme.palette.error.main         theme.palette.success.main
+theme.palette.warning.main       theme.palette.info.main
+theme.palette.text.primary       theme.palette.text.secondary
+theme.palette.text.caption       // кастомное расширение
+theme.palette.background.default theme.palette.background.paper
+theme.palette.divider
+
+// Кастомные поверхности (level1 = темнее → level7 = светлее)
+theme.palette.surface.level1 .. theme.palette.surface.level7
+```
+
+---
+
+## `theme.custom` — кастомные токены Zero
+
+### Layout
+
+```ts
+theme.custom.layout.maxWidth          // 1200
+theme.custom.layout.contentPadding    // 3  (spacing units = 24px)
+theme.custom.layout.pagePadding       // 1.5
+theme.custom.layout.contentGap        // 1.5
+theme.custom.layout.cardRadius        // 16
+theme.custom.layout.sidebarWidthOpen  // 280
+theme.custom.layout.sidebarWidthClosed// 48
+theme.custom.layout.controlSize       // 32  (header controls)
+theme.custom.layout.headerHeight      // appBarHeight
+```
+
+### Surface
+
+```ts
+theme.custom.surface.card.background  // gradient linear-gradient(...)
+theme.custom.surface.card.border      // '1px solid rgba(43,43,45,0.4)'
+theme.custom.surface.card.shadow      // box-shadow string
+theme.custom.surface.dropdown         // '#131315' — фон выпадающих
+theme.custom.surface.fadeTop          // gradient сверху вниз
+theme.custom.surface.fadeBottom       // gradient снизу вверх
+```
+
+### Charts
+
+```ts
+theme.custom.chartColors              // string[] — палитра серии
+theme.custom.chartColorPairs          // Record<string, string> — светлые пары
+theme.custom.chart.defaultHeight      // 350
+theme.custom.chart.sparklineMaxHeight // 150
+theme.custom.chart.gaugeMaxHeight     // 250
+theme.custom.chart.gaugeWidth         // 200
+theme.custom.chart.lineStrokeWidth    // 2.5
+theme.custom.chart.barBorderRadius    // 6
+```
+
+### Icons & Opacity
+
+```ts
+theme.custom.iconSize.xs   // 14    theme.custom.iconSize.sm   // 16
+theme.custom.iconSize.md   // 18    theme.custom.iconSize.lg   // 24
+theme.custom.iconSize.xl   // 32    theme.custom.iconSize.hero // 64
+
+theme.custom.iconOpacity.muted      // 0.7
+theme.custom.iconOpacity.emptyState // 0.4
+```
+
+### DataGrid & Search
+
+```ts
+theme.custom.dataGrid.rowHeight     // 40
+theme.custom.dataGrid.headerHeight  // 40
+theme.custom.dataGrid.toolbarHeight // 52
+theme.custom.dataGrid.footerHeight  // 56
+
+theme.custom.search.width   // 340
+theme.custom.search.height  // 34
+```
+
+### ZIndex
+
+```ts
+theme.custom.zIndex.sidebar   // 10    theme.custom.zIndex.header  // 20
+theme.custom.zIndex.dropdown  // 30    theme.custom.zIndex.modal   // 40
+theme.custom.zIndex.overlay   // 50    theme.custom.zIndex.tooltip // 60
+```
+
+---
+
+## MUI Paper Variants
+
+```tsx
+<Paper variant="interactive" />  // hover: translateY(-2px) + border + shadow
+<Paper variant="metric" />       // hover: translateY(-1px) + border + shadow
+```
+
+---
+
+## Правила расширения темы
+
+### Новый цвет → в `tokens/colors.ts` (heroui шкала) или `palette.ts`
+
+```ts
+// palette.ts — добавить в palette и surface
+surface: {
+  level8: heroui.content[2],  // пример нового уровня
+},
+```
+
+### Новый layout-токен → в `custom.ts` + `types.ts`
+
+```ts
+// types.ts
+layout: {
+  // ...existing
+  drawerWidth: number;
+};
+// custom.ts — layout: { ..., drawerWidth: 320 }
+```
+
+### Новый component override → в нужном `components/*.ts`
+
+```ts
+// components/inputs.ts — пример нового компонента
+MuiSlider: {
+  styleOverrides: {
+    root: ({ theme: t }) => ({
+      color: t.palette.primary.main,
+      height: 4,
+    }),
+  },
+},
+```
+
+### После изменений токенов — обновить snapshot
+
+```bash
+cd client && npx vitest run --reporter=verbose
+# при изменении токенов:
+npx vitest run -u   # update snapshots
+```
+
+---
+
+## Checklist перед PR
+
+- [ ] Нет `#rrggbb` / `rgba(...)` в `.tsx` файлах
+- [ ] Нет `style={{}}` с визуальными свойствами
+- [ ] Нет `as any` для доступа к `theme.heroui` / `theme.custom`
+- [ ] Нет hardcoded `fontSize`, `transition`, `boxShadow`, `zIndex` строк
+- [ ] Hover-эффекты, тени, градиенты — только в теме
+- [ ] Новый блок использует `BlockContainer` + `BlockTitle`
+- [ ] Новый токен добавлен в `types.ts` и `custom.ts` (или `tokens/colors.ts`)
+- [ ] ESLint проходит без новых warnings (`pnpm lint`)
+- [ ] Snapshot-тест не сломан (или обновлён осознанно)

@@ -1,8 +1,10 @@
 import { Box, Paper, Typography, Grid } from '@mui/material';
-import { styled, alpha, useTheme } from '@mui/material/styles';
+import { alpha, useTheme } from '@mui/material/styles';
+import { useTranslation } from 'react-i18next';
 import { Icon } from '@iconify/react';
 import type { MetricsBlock as MetricsBlockType, MetricItem } from '../../types/report';
 import { resolveColor } from '../../utils/resolveColor';
+import { resolveLocale } from '../../utils/locale';
 
 const iconMap: Record<string, string> = {
   trending_up: 'solar:arrow-right-up-bold-duotone',
@@ -19,52 +21,16 @@ const iconMap: Record<string, string> = {
   star: 'solar:star-bold-duotone',
 };
 
-interface MetricCardOwnerState {
-  accentColor: string;
-}
-
-const MetricCardRoot = styled(Paper, {
-  name: 'ZrMetricCard',
-  slot: 'Root',
-})<{ ownerState: MetricCardOwnerState }>(({ theme, ownerState }) => ({
-  padding: theme.spacing(2.5),
-  display: 'flex',
-  alignItems: 'flex-start',
-  gap: theme.spacing(2),
-  borderLeft: `3px solid ${ownerState.accentColor}`,
-  transition: 'all 0.2s ease',
-  position: 'relative',
-  overflow: 'hidden',
-  '&:hover': {
-    borderColor: 'rgba(43, 43, 45, 1)',
-    borderLeftColor: ownerState.accentColor,
-    boxShadow: '0px 6px 14px 0px rgba(105, 104, 104, 0.35)',
-    transform: 'translateY(-1px)',
-  },
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    background: `linear-gradient(135deg, ${alpha(ownerState.accentColor, 0.08)} 0%, transparent 60%)`,
-    pointerEvents: 'none',
-  },
-}));
-
+const DELTA_ICON_DEFAULT = 'solar:arrow-right-bold-duotone';
 const deltaIconMap: Record<string, string> = {
   positive: 'solar:arrow-right-up-bold-duotone',
   negative: 'solar:arrow-right-down-bold-duotone',
 };
-const DELTA_ICON_DEFAULT = 'solar:arrow-right-bold-duotone';
 
-function MetricCard({ item }: { item: MetricItem }) {
+function MetricCard({ item, lang }: { item: MetricItem; lang: string }) {
   const theme = useTheme();
   const accentColor = resolveColor(item.color, theme) || theme.palette.primary.main;
-
   const iconName = item.icon ? iconMap[item.icon] || DELTA_ICON_DEFAULT : null;
-
   const deltaIcon = deltaIconMap[item.deltaType || ''] || DELTA_ICON_DEFAULT;
 
   const deltaColorToken =
@@ -75,30 +41,54 @@ function MetricCard({ item }: { item: MetricItem }) {
         : 'text.secondary';
 
   return (
-    <MetricCardRoot ownerState={{ accentColor }}>
+    <Paper
+      variant="metric"
+      sx={{
+        p: 2.5,
+        display: 'flex',
+        alignItems: 'flex-start',
+        gap: 2,
+        borderLeft: `3px solid ${accentColor}`,
+        position: 'relative',
+        overflow: 'hidden',
+        '&:hover': {
+          borderLeftColor: accentColor,
+        },
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: `linear-gradient(135deg, ${alpha(accentColor, 0.08)} 0%, transparent 60%)`,
+          pointerEvents: 'none',
+        },
+      }}
+    >
       {iconName && (
         <Box
-          sx={(theme) => ({
+          sx={(t) => ({
             color: accentColor,
-            opacity: theme.custom.iconOpacity.muted,
+            opacity: t.custom.iconOpacity.muted,
             mt: 0.5,
             display: 'flex',
           })}
         >
-          <Icon icon={iconName} width={24} />
+          <Icon icon={iconName} width={theme.custom.iconSize.lg} />
         </Box>
       )}
       <Box sx={{ flex: 1, minWidth: 0 }}>
         <Typography
           variant="caption"
-          sx={{
+          sx={(t) => ({
             color: 'text.secondary',
             textTransform: 'uppercase',
             letterSpacing: '0.05em',
-            fontSize: '0.75rem',
-          }}
+            fontSize: t.heroui.typography.tiny.fontSize,
+          })}
         >
-          {item.label}
+          {resolveLocale(item.label, lang)}
         </Typography>
         <Typography
           variant="h4"
@@ -113,17 +103,21 @@ function MetricCard({ item }: { item: MetricItem }) {
         </Typography>
         {item.delta && (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: deltaColorToken }}>
-            <Icon icon={deltaIcon} width={16} />
+            <Icon icon={deltaIcon} width={theme.custom.iconSize.sm} />
             <Typography
               variant="caption"
-              sx={{ color: deltaColorToken, fontWeight: 500, fontSize: '0.813rem' }}
+              sx={(t) => ({
+                color: deltaColorToken,
+                fontWeight: 500,
+                fontSize: t.heroui.typography.small.fontSize,
+              })}
             >
-              {item.delta}
+              {resolveLocale(item.delta, lang)}
             </Typography>
           </Box>
         )}
       </Box>
-    </MetricCardRoot>
+    </Paper>
   );
 }
 
@@ -132,13 +126,14 @@ interface Props {
 }
 
 export function MetricsBlock({ block }: Props) {
+  const { i18n } = useTranslation();
   const columns = block.columns || 4;
 
   return (
     <Grid container spacing={2.5}>
       {block.items.map((item, i) => (
-        <Grid key={i} size={{ xs: 12, sm: 6, md: 12 / columns }}>
-          <MetricCard item={item} />
+        <Grid key={item.label?.toString() ?? i} size={{ xs: 12, sm: 6, md: 12 / columns }}>
+          <MetricCard item={item} lang={i18n.language} />
         </Grid>
       ))}
     </Grid>

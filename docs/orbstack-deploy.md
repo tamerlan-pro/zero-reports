@@ -2,6 +2,16 @@
 
 > **ВАЖНО ДЛЯ AI АГЕНТОВ**: Этот документ содержит пошаговые инструкции для деплоя на ЛОКАЛЬНЫЙ СЕРВЕР (OrbStack VM).
 > Выполняйте команды ПОСЛЕДОВАТЕЛЬНО. НЕ пропускайте шаги. ПРОВЕРЯЙТЕ результат каждого шага.
+>
+> **КРИТИЧЕСКИ ВАЖНО — ДВА DOCKER-ОКРУЖЕНИЯ:**
+> На этой машине работают ДВА НЕЗАВИСИМЫХ Docker-движка:
+> 1. **macOS Docker** (хост) — `docker ps` на macOS. Это НЕ production-сервер.
+> 2. **OrbStack VM Docker** — `orb run -m zero-reports docker ps`. Это ЕДИНСТВЕННЫЙ production-сервер.
+>
+> `zero-reports.orb.local` указывает на VM (`192.168.129.116`), а НЕ на macOS Docker.
+> **ВСЕ команды сборки и деплоя ОБЯЗАНЫ выполняться ЧЕРЕЗ `orb run -m zero-reports`.**
+> Выполнение `docker compose build/up` напрямую на macOS НЕ влияет на production.
+> НИКОГДА не используй `docker compose` без `orb run -m zero-reports` для деплоя.
 
 ---
 
@@ -20,18 +30,32 @@ LOCAL_PROJECT_PATH = /Volumes/Thunderlan/Yandex Drive/Yandex.Disk.localized/0to8
 OrbStack VM — Ubuntu внутри OrbStack на рабочем Mac.
 
 **Сетевые особенности OrbStack:**
-- **SSH** → используй `zero-reports.orb.local` (резолвится через `/etc/hosts` → `192.168.139.116`)
+- **SSH** → используй `zero-reports.orb.local` (резолвится через `/etc/hosts` → `192.168.129.116`)
 - **HTTP (curl, браузер)** → используй `zero-reports.orb.local`
 - **Внутри VM** → OrbStack CLI: `orb run -m zero-reports <command>` (рекомендуется, не требует пароля)
 
-**ВАЖНО — Сетевой fix (bridge subnet):**
-OrbStack's DHCP назначает VM IP в подсети `192.168.139.0/24`, но bridge100 на macOS — в `192.168.128.0/24`.
-Из-за этого VM недоступна с macOS по умолчанию. Применены два постоянных исправления:
-1. **На macOS**: LaunchDaemon `com.orbstack.route-fix` добавляет маршрут `192.168.139.0/24 → bridge100` при загрузке
-2. **На macOS**: запись в `/etc/hosts`: `192.168.139.116  zero-reports.orb.local`
-3. **На VM**: systemd-сервис `bridge-ip.service` добавляет обратный маршрут `192.168.128.0/24 dev eth0`
+**⚠️ ЛОВУШКА: macOS Docker ≠ VM Docker**
+OrbStack регистрирует port-forwarding с macOS (`localhost:80`) на VM.
+Однако Docker-контейнеры запущенные на macOS (`docker compose up -d` без `orb run`)
+создают ДРУГИЕ контейнеры на хосте, которые тоже маппятся на `localhost:80`.
+В итоге `curl http://localhost:80` может попасть в macOS-контейнер, а
+`curl http://zero-reports.orb.local` — в VM-контейнер. Это два РАЗНЫХ сервера.
+**Единственный правильный способ деплоя — через `orb run -m zero-reports`.**
 
-Если после перезагрузки macOS или OrbStack сеть снова недоступна — см. TROUBLESHOOTING → "Сеть OrbStack не работает".
+**ВАЖНО — Сетевой fix (bridge subnet):**
+OrbStack's DHCP назначает VM IP **динамически** — подсеть может меняться при перезапуске VM.
+Bridge100 на macOS — в `192.168.128.0/24`. VM может получить IP в другой подсети (напр. `192.168.129.x`, `192.168.139.x`).
+
+**Автоматическое исправление (при загрузке macOS):**
+1. **LaunchDaemon** `com.orbstack.route-fix` → запускает `/usr/local/bin/orbfix-launchdaemon.sh`, который **динамически** определяет IP VM, добавляет маршрут и обновляет `/etc/hosts`
+2. **На VM**: systemd-сервис `bridge-ip.service` добавляет обратный маршрут `192.168.128.0/24 dev eth0`
+
+**Ручное исправление (если сеть не работает после перезагрузки OrbStack или VM):**
+```bash
+cd "/Volumes/Thunderlan/Yandex Drive/Yandex.Disk.localized/0to8/backend/zero-reports/zero-reports"
+bash scripts/orbfix.sh
+```
+Скрипт автоматически: запустит VM (если остановлена), определит текущий IP, добавит маршрут, обновит `/etc/hosts`, настроит обратный маршрут на VM и проверит подключение.
 
 **ВАЖНО: SSH через `sshpass` может зависать на этой VM. Используй `orb run -m zero-reports` для выполнения команд.**
 
@@ -148,10 +172,13 @@ ENVEOF
 
 ### Шаг B2: Сборка и запуск
 
+**⚠️ ОБЯЗАТЕЛЬНО через `orb run`! Без него сборка пойдёт в macOS Docker, а не на сервер.**
+
 **Команда:**
 ```bash
 orb run -m zero-reports bash -c '
   cd /home/tamerlan/zero-reports
+  docker compose -f docker-compose.dev.yml down --remove-orphans
   docker compose -f docker-compose.dev.yml up --build -d 2>&1
 '
 ```
@@ -202,7 +229,31 @@ orb run -m zero-reports bash -c 'curl -s http://localhost/api/health'
 
 ---
 
-### Шаг B5: Проверка статуса контейнеров
+### Шаг B5: Верификация — правильный ли бандл отдаётся
+
+**ОБЯЗАТЕЛЬНЫЙ шаг.** Убедись что VM отдаёт тот же JS-файл, что был собран при `docker compose build`.
+
+**Команда:**
+```bash
+orb run -m zero-reports bash -c '
+  BUILT=$(docker exec zeroreports-client-dev cat /usr/share/nginx/html/index.html | grep -o "index-[^\"]*\.js")
+  SERVED=$(curl -s http://localhost/ | grep -o "index-[^\"]*\.js")
+  echo "Built:  $BUILT"
+  echo "Served: $SERVED"
+  if [ "$BUILT" = "$SERVED" ]; then echo "✅ OK — бандлы совпадают"; else echo "❌ MISMATCH — сервер отдаёт старый файл!"; fi
+'
+```
+
+**Требуемые permissions:** `all`
+
+**Если ❌ MISMATCH:**
+1. Останови контейнеры: `orb run -m zero-reports bash -c 'cd /home/tamerlan/zero-reports && docker compose -f docker-compose.dev.yml down --remove-orphans'`
+2. Пересобери с нуля: вернись к Шагу B2
+3. Если не помогает — см. TROUBLESHOOTING → "Сервер отдаёт старый бандл"
+
+---
+
+### Шаг B6: Проверка статуса контейнеров
 
 **Команда:**
 ```bash
@@ -220,7 +271,7 @@ orb run -m zero-reports bash -c '
 
 ---
 
-### Шаг B6: Сообщи результат пользователю
+### Шаг B7: Сообщи результат пользователю
 
 **Если все шаги успешны, напиши:**
 ```
@@ -316,31 +367,49 @@ orb run -m zero-reports bash -c '
 
 **Симптомы:** `curl http://zero-reports.orb.local/` зависает, ping 100% packet loss
 
-**Причина:** OrbStack's bridge100 на macOS в подсети `192.168.128.0/24`, а VM получает DHCP-адрес в `192.168.139.0/24`. Подсети не совпадают → нет маршрута.
+**Причина:** OrbStack's bridge100 на macOS в подсети `192.168.128.0/24`, а VM получает DHCP-адрес в **другой подсети** (IP меняется при перезапуске VM).
 
-**Решение — проверить и восстановить:**
+**Решение — запустить скрипт автоматической настройки:**
 ```bash
-# 1. Проверить маршрут на macOS (должна быть строка 192.168.139 → bridge100)
-netstat -rn | grep 192.168.139
-
-# 2. Если маршрута нет — добавить (потребует пароль администратора macOS)
-osascript -e 'do shell script "route add -net 192.168.139.0/24 -interface bridge100" with administrator privileges'
-
-# 3. Проверить обратный маршрут на VM
-orb run -m zero-reports bash -c 'ip route show | grep 192.168.128'
-
-# 4. Если маршрута нет — перезапустить сервис
-orb run -m zero-reports sudo bash -c 'systemctl start bridge-ip.service'
-
-# 5. Проверить /etc/hosts на macOS (должна быть строка: 192.168.139.116  zero-reports.orb.local)
-grep zero-reports /etc/hosts
-
-# 6. Проверить
-ping -c 1 192.168.139.116
-curl -s http://zero-reports.orb.local/api/health
+cd "/Volumes/Thunderlan/Yandex Drive/Yandex.Disk.localized/0to8/backend/zero-reports/zero-reports"
+bash scripts/orbfix.sh
 ```
 
+Скрипт автоматически определяет текущий IP, добавляет маршрут, обновляет `/etc/hosts` и проверяет подключение.
+
 **Требуемые permissions:** `all`
+
+---
+
+### Проблема: Сервер отдаёт старый бандл (MISMATCH на шаге B5)
+
+**Симптомы:** `curl http://zero-reports.orb.local/` возвращает HTML со старым JS-файлом, хотя контейнер был пересобран.
+
+**Причина:** Существуют ДВА Docker-окружения — macOS Docker и OrbStack VM Docker. Если деплой выполнялся через `docker compose` напрямую на macOS (без `orb run`), то контейнеры пересобирались на ХОСТЕ, а не на VM. VM продолжала отдавать старый код.
+
+**Решение:**
+```bash
+# 1. Убедись что деплоишь на VM, а не на macOS:
+orb run -m zero-reports bash -c '
+  cd /home/tamerlan/zero-reports
+  docker compose -f docker-compose.dev.yml down --remove-orphans
+  docker compose -f docker-compose.dev.yml up --build -d 2>&1
+'
+```
+
+**Как диагностировать — какой Docker используется:**
+```bash
+# Docker на macOS (НЕПРАВИЛЬНО для деплоя):
+docker ps
+
+# Docker на VM (ПРАВИЛЬНО):
+orb run -m zero-reports docker ps
+```
+
+Если контейнеры с одинаковыми именами есть в обоих списках — macOS Docker перехватывает трафик. Останови macOS-контейнеры:
+```bash
+docker compose -f docker-compose.dev.yml down
+```
 
 ---
 
@@ -391,11 +460,14 @@ orb run -m zero-reports bash -c '
 - [ ] OrbStack VM `zero-reports` в статусе `running` (`orb list`)
 - [ ] Файлы синхронизированы (tar → extract)
 - [ ] `.env` создан на VM
+- [ ] **Все команды выполнялись через `orb run -m zero-reports` (НЕ через macOS Docker!)**
 - [ ] Docker build завершился (строки "Built")
 - [ ] `docker compose up -d` — 3 контейнера Started
 - [ ] Подождал минимум 20 секунд после запуска
 - [ ] Health endpoint вернул `{"status":"ok"}` на `/api/health`
+- [ ] **Бандл верифицирован (Шаг B5): Built = Served ✅**
 - [ ] Все контейнеры в статусе `(healthy)`
+- [ ] macOS Docker НЕ запущен на порту 80 (нет конфликта)
 - [ ] Сообщил пользователю результат
 
 ---
@@ -442,7 +514,7 @@ orb run -m zero-reports bash -c 'cd /home/tamerlan/zero-reports && docker compos
 orb run -m zero-reports bash -c 'cd /home/tamerlan/zero-reports && docker compose -f docker-compose.dev.yml down'
 ```
 
-### Полный rsync + build + start:
+### Полный rsync + build + start + verify:
 ```bash
 cd "/Volumes/Thunderlan/Yandex Drive/Yandex.Disk.localized/0to8/backend/zero-reports/zero-reports" && \
 tar czf /tmp/zero-reports-deploy.tar.gz --exclude='node_modules' --exclude='.git' --exclude='dist' --exclude='coverage' . && \
@@ -458,7 +530,20 @@ PORT=3000
 DATABASE_URL=postgresql://zeroreports:zeroreports_secret@postgres:5432/zeroreports
 VITE_API_URL=/api
 ENVEOF
+  docker compose -f docker-compose.dev.yml down --remove-orphans
   docker compose -f docker-compose.dev.yml up --build -d
+'
+```
+
+### Верификация после деплоя:
+```bash
+sleep 15 && orb run -m zero-reports bash -c '
+  BUILT=$(docker exec zeroreports-client-dev cat /usr/share/nginx/html/index.html | grep -o "index-[^\"]*\.js")
+  SERVED=$(curl -s http://localhost/ | grep -o "index-[^\"]*\.js")
+  echo "Built:  $BUILT"
+  echo "Served: $SERVED"
+  if [ "$BUILT" = "$SERVED" ]; then echo "✅ OK"; else echo "❌ MISMATCH"; fi
+  curl -s http://localhost/api/health
 '
 ```
 
@@ -493,10 +578,14 @@ ENVEOF
 | Docker Compose | v5.1.0 |
 | Containers | 3 (postgres, server, client) |
 
-**Важно:** Для выполнения команд используй `orb run -m zero-reports`. HTTP (curl/браузер) — через `zero-reports.orb.local` (→ `192.168.139.116`).
+**Важно:** Для выполнения команд используй `orb run -m zero-reports`. HTTP (curl/браузер) — через `zero-reports.orb.local` (→ `192.168.129.116`).
 
 **Сетевой fix:** Маршрут macOS → VM через LaunchDaemon, обратный маршрут VM → macOS через systemd. DNS через `/etc/hosts`.
 
 ---
 
-**Последнее обновление:** 2026-03-04
+**Последнее обновление:** 2026-03-05
+
+**Changelog:**
+- 2026-03-05: Добавлены предупреждения о двух Docker-окружениях (macOS vs VM). Добавлен обязательный шаг B5 (верификация бандла). Добавлен troubleshooting для MISMATCH. Обновлён чеклист.
+- 2026-03-04: Первая версия документа.

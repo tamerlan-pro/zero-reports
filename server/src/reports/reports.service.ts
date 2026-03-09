@@ -46,8 +46,8 @@ export class ReportsService {
     return this.prisma.report.create({
       data: {
         slug: dto.slug,
-        title: dto.title,
-        description: dto.description,
+        title: dto.title as unknown as Prisma.InputJsonValue,
+        description: dto.description as unknown as Prisma.InputJsonValue,
         config: dto.config as unknown as Prisma.InputJsonValue,
         isPublished: dto.isPublished ?? true,
       },
@@ -60,11 +60,17 @@ export class ReportsService {
       throw new NotFoundException(`Report with slug "${slug}" not found`);
     }
 
-    const { config, ...rest } = dto;
+    const { config, title, description, ...rest } = dto;
     return this.prisma.report.update({
       where: { slug },
       data: {
         ...rest,
+        ...(title !== undefined && {
+          title: title as unknown as Prisma.InputJsonValue,
+        }),
+        ...(description !== undefined && {
+          description: description as unknown as Prisma.InputJsonValue,
+        }),
         ...(config !== undefined && {
           config: config as unknown as Prisma.InputJsonValue,
         }),

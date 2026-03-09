@@ -1,0 +1,10 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`createZeroTheme > matches token snapshot 1`] = `
+{
+  "borderRadius": 12,
+  "chartColorsCount": 6,
+  "maxWidth": 1200,
+  "primaryMain": "#006FEE",
+}
+`;

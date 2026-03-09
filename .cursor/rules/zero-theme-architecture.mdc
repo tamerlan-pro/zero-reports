@@ -1,0 +1,182 @@
+---
+description: Zero Theme architecture rules — принцип Zero Design In Components, структура темы, паттерны добавления стилей/компонентов/токенов
+globs: client/src/**/*.{ts,tsx},packages/zero-theme/src/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# Zero Theme Architecture
+
+## Принцип: Zero Design In Components
+
+**Компоненты НЕ содержат визуальных определений.** Все цвета, тени, радиусы, переходы, шрифты и градиенты определяются в теме.
+
+### Что разрешено в `sx`
+
+```tsx
+// ✅ Структурная разметка + семантические токены
+<Box sx={{ display: 'flex', gap: 2, overflow: 'hidden' }} />
+<Box sx={{ color: 'text.secondary', mt: 1 }} />
+<Box sx={(t) => ({ p: t.custom.layout.contentPadding })} />
+
+// ❌ Визуальные значения прямо в компоненте
+<Box sx={{ color: '#71717A', fontSize: '0.75rem' }} />
+<Box sx={{ boxShadow: '0px 4px 10px rgba(0,0,0,0.5)', transition: 'all 0.2s ease' }} />
+<Box style={{ color: 'red', marginRight: 8 }} />
+```
+
+### Запрещено в компонентах
+
+| Запрет | Пример нарушения | Решение |
+|--------|-----------------|---------|
+| Hex/rgba цвета | `color: '#131315'` | `color: 'text.primary'` или токен из темы |
+| `style={{}}` | `style={{ color: 'red' }}` | `sx={{ color: 'error.main' }}` |
+| `as any` для темы | `(theme as any).heroui` | Импортировать типы из `@zero/theme` |
+| Hardcoded fontSize | `fontSize: '0.75rem'` | `fontSize: t.heroui.typography.tiny.fontSize` |
+| Hardcoded transition | `transition: 'all 0.2s ease'` | `transition: t.heroui.transitions.normal` |
+| Hardcoded shadow | `boxShadow: '0px 4px ...'` | `boxShadow: t.heroui.shadows.lg` |
+| Hardcoded zIndex | `zIndex: 9999` | `zIndex: t.custom.zIndex.overlay` |
+
+---
+
+## Структура темы
+
+```
+client/src/theme/           ← активная тема (alias → @zero/theme)
+packages/zero-theme/src/    ← пакет-поставщик для других сервисов
+├── tokens/colors.ts        ← героic цветовые шкалы, transitions, shadows
+├── palette.ts              ← MUI palette + surface levels
+├── typography.ts           ← MUI typography variants
+├── custom.ts               ← chartColors, layout, surface, iconSize, zIndex, dataGrid, search
+├── augmentation.ts         ← declare module расширения типов MUI
+├── createZeroTheme.ts      ← фабрика темы
+├── provider.tsx            ← ZeroThemeProvider
+└── components/             ← MUI styleOverrides по категориям
+    ├── surfaces.ts         ← MuiPaper (incl. variants: interactive, metric)
+    ├── buttons.ts
+    ├── inputs.ts
+    ├── feedback.ts
+    ├── navigation.ts
+    ├── dataDisplay.ts
+    ├── charts.ts
+    └── dataGrid.ts
+```
+
+---
+
+## Паттерны
+
+### Добавление нового визуального стиля
+
+1. Определить в теме в нужном `components/*.ts` файле:
+
+```ts
+// components/surfaces.ts
+MuiCard: {
+  styleOverrides: {
+    root: ({ theme: t }) => ({
+      borderRadius: t.custom.layout.cardRadius,
+      transition: `all ${t.heroui.transitions.normal}`,
+    }),
+  },
+},
+```
+
+2. Использовать в компоненте только через MUI API:
+
+```tsx
+<Card>...</Card>   // ✅ — стиль из темы
+```
+
+### Добавление нового дизайн-токена
+
+1. Добавить значение в `custom.ts` (или `tokens/colors.ts` для базовых токенов):
+
+```ts
+// custom.ts
+export const custom: ZeroCustomTokens = {
+  // ...existing
+  layout: {
+    // ...existing
+    newToken: 400,
+  },
+};
+```
+
+2. Добавить тип в `types.ts`:
+
+```ts
+interface ZeroCustomTokens {
+  layout: {
+    // ...
+    newToken: number;
+  };
+}
+```
+
+3. `augmentation.ts` обновляется автоматически (уже расширяет `Theme.custom`).
+
+### Добавление нового MUI variant
+
+1. Добавить аугментацию в `augmentation.ts`:
+
+```ts
+declare module '@mui/material/Paper' {
+  interface PaperPropsVariantOverrides {
+    newVariant: true;
+  }
+}
+```
+
+2. Добавить стили в `components/surfaces.ts`:
+
+```ts
+variants: [
+  {
+    props: { variant: 'newVariant' },
+    style: ({ theme: t }) => ({ ... }),
+  },
+],
+```
+
+3. Использовать: `<Paper variant="newVariant" />`
+
+### Добавление нового блока отчёта
+
+```tsx
+// ✅ Правильный шаблон нового блока
+import { BlockContainer } from '../shared/BlockContainer';
+import { BlockTitle } from '../shared/BlockTitle';
+
+export function MyBlock({ block }: { block: MyBlockData }) {
+  return (
+    <BlockContainer>
+      <BlockTitle>{block.title}</BlockTitle>
+      {/* только структурная разметка в sx */}
+    </BlockContainer>
+  );
+}
+```
+
+### Подключение темы в новом сервисе
+
+```tsx
+import { ZeroThemeProvider } from '@zero/theme';
+
+function App() {
+  return (
+    <ZeroThemeProvider locale="ru" overrides={{ /* service-specific */ }}>
+      <MyServiceApp />
+    </ZeroThemeProvider>
+  );
+}
+```
+
+---
+
+## Enforcement
+
+- ESLint: `zero-theme/no-hardcoded-colors` (warn) — блокирует hex/rgba в компонентах
+- ESLint: `no-restricted-syntax` (warn) — блокирует `style={{}}`
+- ESLint: `@typescript-eslint/no-explicit-any` (error) — блокирует `as any`
+- Snapshot-тест `createZeroTheme` — защищает от случайных изменений токенов
+- Unit-тесты `resolveColor` — защищают утилиту цветового резолвинга

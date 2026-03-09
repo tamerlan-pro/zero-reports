@@ -1,9 +1,10 @@
 import { Box, Typography, Chip, LinearProgress, Link as MuiLink } from '@mui/material';
+import { BlockTitle } from './shared/BlockTitle';
 import { styled } from '@mui/material/styles';
+import { useTranslation } from 'react-i18next';
 import {
   DataGridPro,
   type GridColDef,
-  type GridRowClassNameParams,
   Toolbar,
   ToolbarButton,
   QuickFilter,
@@ -19,6 +20,7 @@ import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
 import Tooltip from '@mui/material/Tooltip';
 import type { TableBlock as TableBlockType, TableColumn } from '../../types/report';
+import { resolveLocale } from '../../utils/locale';
 
 const chipColors: Record<string, 'success' | 'warning' | 'error' | 'info' | 'default'> = {
   active: 'success',
@@ -40,11 +42,11 @@ const StyledQuickFilter = styled(QuickFilter)({
   marginLeft: 'auto',
 });
 
-function buildColumns(columns: TableColumn[]): GridColDef[] {
+function buildColumns(columns: TableColumn[], lang: string): GridColDef[] {
   return columns.map((col) => {
     const base: GridColDef = {
       field: col.field,
-      headerName: col.headerName,
+      headerName: resolveLocale(col.headerName, lang),
       width: col.width,
       flex: col.flex,
       type: col.type,
@@ -55,8 +57,9 @@ function buildColumns(columns: TableColumn[]): GridColDef[] {
     };
 
     if (col.type === 'number') {
+      const numLocale = lang === 'en' ? 'en-US' : 'ru-RU';
       base.valueFormatter = (value: number) =>
-        value != null ? value.toLocaleString('ru-RU') : '';
+        value != null ? value.toLocaleString(numLocale) : '';
       if (!col.align) base.align = 'right';
       if (!col.headerAlign) base.headerAlign = 'right';
     }
@@ -66,13 +69,15 @@ function buildColumns(columns: TableColumn[]): GridColDef[] {
         const val = String(params.value || '');
         const color = chipColors[val.toLowerCase()] || 'default';
         return (
-          <Chip
-            label={val}
-            color={color}
-            size="small"
-            variant="outlined"
-            sx={{ fontWeight: 500 }}
-          />
+          <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', height: '100%' }}>
+            <Chip
+              label={val}
+              color={color}
+              size="small"
+              variant="outlined"
+              sx={{ fontWeight: 500 }}
+            />
+          </Box>
         );
       };
     }
@@ -81,7 +86,7 @@ function buildColumns(columns: TableColumn[]): GridColDef[] {
       base.renderCell = (params) => {
         const val = Number(params.value) || 0;
         return (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%', height: '100%' }}>
             <LinearProgress
               variant="determinate"
               value={Math.min(val, 100)}
@@ -97,9 +102,11 @@ function buildColumns(columns: TableColumn[]): GridColDef[] {
       base.renderCell = (params) => {
         const val = String(params.value || '');
         return (
-          <MuiLink href={val} target="_blank" rel="noopener noreferrer" noWrap>
-            {val}
-          </MuiLink>
+          <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', height: '100%' }}>
+            <MuiLink href={val} target="_blank" rel="noopener noreferrer" noWrap>
+              {val}
+            </MuiLink>
+          </Box>
         );
       };
     }
@@ -108,7 +115,9 @@ function buildColumns(columns: TableColumn[]): GridColDef[] {
       base.renderCell = (params) => {
         const val = params.value;
         return (
-          <Chip label={String(val)} size="small" color="primary" />
+          <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', height: '100%' }}>
+            <Chip label={String(val)} size="small" color="primary" />
+          </Box>
         );
       };
     }
@@ -118,24 +127,25 @@ function buildColumns(columns: TableColumn[]): GridColDef[] {
 }
 
 function CustomToolbar() {
+  const { t } = useTranslation();
   return (
     <Toolbar>
-      <Tooltip title="Columns">
+      <Tooltip title={t('common.columns')}>
         <ColumnsPanelTrigger render={<ToolbarButton />}>
           <Icon icon="solar:tuning-2-bold-duotone" width={18} />
         </ColumnsPanelTrigger>
       </Tooltip>
-      <Tooltip title="Filters">
+      <Tooltip title={t('common.filters')}>
         <FilterPanelTrigger render={<ToolbarButton />}>
           <Icon icon="solar:filter-bold-duotone" width={18} />
         </FilterPanelTrigger>
       </Tooltip>
-      <Tooltip title="Export CSV">
+      <Tooltip title={t('common.exportCsv')}>
         <ExportCsv render={<ToolbarButton />}>
           <Icon icon="solar:file-download-bold-duotone" width={18} />
         </ExportCsv>
       </Tooltip>
-      <Tooltip title="Print">
+      <Tooltip title={t('common.print')}>
         <ExportPrint render={<ToolbarButton />}>
           <Icon icon="solar:printer-bold-duotone" width={18} />
         </ExportPrint>
@@ -147,8 +157,8 @@ function CustomToolbar() {
             <TextField
               {...controlProps}
               inputRef={ref}
-              aria-label="Search"
-              placeholder="Search..."
+              aria-label={t('common.search')}
+              placeholder={t('common.search')}
               size="small"
               sx={{ width: 220 }}
               slotProps={{
@@ -163,7 +173,7 @@ function CustomToolbar() {
                       <QuickFilterClear
                         edge="end"
                         size="small"
-                        aria-label="Clear search"
+                        aria-label={t('common.clearSearch')}
                         material={{ sx: { marginRight: -0.75 } }}
                       >
                         <Icon icon="solar:close-circle-bold-duotone" width={18} />
@@ -182,8 +192,9 @@ function CustomToolbar() {
   );
 }
 
-const ROW_HEIGHT = 52;
-const HEADER_HEIGHT = 56;
+// These match theme.custom.dataGrid values — kept in sync via custom tokens
+const ROW_HEIGHT = 40;
+const HEADER_HEIGHT = 40;
 const TOOLBAR_HEIGHT = 52;
 const FOOTER_HEIGHT = 56;
 
@@ -192,24 +203,23 @@ interface Props {
 }
 
 export function TableBlock({ block }: Props) {
-  const columns = buildColumns(block.columns);
+  const { i18n } = useTranslation();
+  const lang = i18n.language;
+  const columns = buildColumns(block.columns, lang);
   const pageSize = block.pageSize || 10;
   const rowCount = block.rows.length;
+
   const tableHeight = block.autoHeight
     ? undefined
     : Math.min(rowCount, pageSize) * ROW_HEIGHT + HEADER_HEIGHT + TOOLBAR_HEIGHT + FOOTER_HEIGHT;
 
-  const getRowClassName = block.striped
-    ? (params: GridRowClassNameParams) =>
-        params.indexRelativeToCurrentPage % 2 === 0 ? 'even-row' : 'odd-row'
-    : undefined;
+  // Striped rows are handled by MuiDataGrid.row theme override (nth-of-type(even)).
+  // No custom getRowClassName needed — the theme does it globally.
 
   return (
     <Box>
       {block.title && (
-        <Typography variant="h6" sx={{ mb: 2 }}>
-          {block.title}
-        </Typography>
+        <BlockTitle>{resolveLocale(block.title, lang)}</BlockTitle>
       )}
       <Box sx={{ width: '100%', height: tableHeight }}>
         <DataGridPro
@@ -220,12 +230,13 @@ export function TableBlock({ block }: Props) {
             pinnedColumns: block.columnPinning,
           }}
           pagination
-          density={block.density}
           showCellVerticalBorder={block.showCellBorders}
           showColumnVerticalBorder={block.showColumnBorders}
-          getRowClassName={getRowClassName}
           hideFooter={block.hideFooter}
-          columnGroupingModel={block.columnGroups}
+          columnGroupingModel={block.columnGroups?.map((g) => ({
+            ...g,
+            headerName: resolveLocale(g.headerName, lang),
+          }))}
           slots={{ toolbar: CustomToolbar }}
         />
       </Box>
