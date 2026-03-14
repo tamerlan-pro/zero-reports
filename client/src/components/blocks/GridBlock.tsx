@@ -14,7 +14,7 @@ export function GridBlock({ block }: Props) {
   return (
     <Grid container spacing={gap}>
       {block.blocks.map((childBlock, i) => (
-        <Grid key={`${childBlock.type}-${i}`} size={{ xs: 12, sm: smSize, md: colSize }}>
+        <Grid key={`${childBlock.type}-${i}`} size={{ xs: 12, sm: smSize, md: colSize }} sx={{ display: 'flex' }}>
           <BlockRenderer block={childBlock} />
         </Grid>
       ))}

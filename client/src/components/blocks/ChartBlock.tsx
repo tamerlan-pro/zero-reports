@@ -15,6 +15,7 @@ import type { ChartBlock as ChartBlockType } from '../../types/report';
 import { formatNumber } from '../../utils/format';
 import { resolveColor } from '../../utils/resolveColor';
 import { resolveLocale, resolveChartData } from '../../utils/locale';
+import { useReportFilters, applyFilters } from '../../context/ReportFilterContext';
 
 function darkenHex(hex: string): string {
   const h = hex.replace('#', '');
@@ -132,7 +133,12 @@ export function ChartBlock({ block }: Props) {
   const chartColors = theme.custom.chartColors;
   const chartColorPairs = theme.custom.chartColorPairs;
   const height = block.height || theme.custom.chart.defaultHeight;
-  const data = resolveChartData(block.data, lang);
+  const { filters, filterDefs } = useReportFilters();
+  // Filter raw data BEFORE resolveChartData: filter values match non-localised fields (e.g. "q1", "music")
+  const rawFiltered = block.id
+    ? applyFilters(block.data, filters, block.id, filterDefs)
+    : block.data;
+  const data = resolveChartData(rawFiltered, lang);
 
   const seriesColors = block.series.map(
     (s, i) => resolveColor(s.color, theme) || chartColors[i % chartColors.length],
@@ -144,6 +150,7 @@ export function ChartBlock({ block }: Props) {
   const legendProps = {
     slotProps: {
       legend: {
+        direction: 'horizontal' as const,
         position: { vertical: 'bottom' as const, horizontal: 'center' as const },
         padding: { top: 20 },
       },
@@ -256,10 +263,9 @@ export function ChartBlock({ block }: Props) {
               arcLabel: (item) => `${item.value}`,
               arcLabelMinAngle: 25,
               innerRadius: 40,
-              outerRadius: '90%',
+              outerRadius: '75%',
               paddingAngle: 2,
               cornerRadius: 5,
-              cx: '50%',
             }]}
             height={height}
             {...legendProps}
@@ -291,11 +297,12 @@ export function ChartBlock({ block }: Props) {
 
       case 'gauge': {
         const gaugeColor = seriesColors[0] || theme.palette.info.main;
+        const gaugeSize = Math.min(height, theme.custom.chart.gaugeSize);
         return (
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'center' }}>
             <Gauge
-              width={theme.custom.chart.gaugeWidth}
-              height={Math.min(height, theme.custom.chart.gaugeMaxHeight)}
+              width={gaugeSize}
+              height={gaugeSize}
               value={block.gaugeValue ?? 0}
               valueMin={block.gaugeMin ?? 0}
               valueMax={block.gaugeMax ?? 100}
@@ -303,7 +310,7 @@ export function ChartBlock({ block }: Props) {
               endAngle={block.gaugeEndAngle ?? 110}
               sx={{
                 '& .MuiGauge-valueText': {
-                  fontSize: 32,
+                  fontSize: theme.custom.chart.gaugeFontSize,
                   fontWeight: 600,
                   fill: theme.palette.text.primary,
                 },
@@ -354,6 +361,7 @@ export function ChartBlock({ block }: Props) {
         return (
           <RadarChart
             height={height}
+            {...legendProps}
             series={block.series.map((s, i) => ({
               label: resolveLocale(s.label, lang) || undefined,
               data: data.map((d) => d[s.dataKey] as number),
@@ -430,11 +438,14 @@ export function ChartBlock({ block }: Props) {
     <BlockContainer
       role="figure"
       aria-label={block.title ? resolveLocale(block.title, lang) : undefined}
+      sx={{ display: 'flex', flexDirection: 'column' }}
     >
       {block.title && (
         <BlockTitle>{resolveLocale(block.title, lang)}</BlockTitle>
       )}
-      <Box sx={{ mx: -1 }}>{content}</Box>
+      <Box sx={{ mx: -1, flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+        {content}
+      </Box>
     </BlockContainer>
   );
 }

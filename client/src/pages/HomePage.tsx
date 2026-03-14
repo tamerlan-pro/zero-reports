@@ -30,9 +30,12 @@ export function HomePage() {
 
   useEffect(() => {
     axiosInstance
-      .get('/reports')
+      .get<ReportListItem[]>('/reports')
       .then(({ data }) => setReports(data))
-      .catch(() => setError(true))
+      .catch((err: unknown) => {
+        console.error('[HomePage] Failed to load reports', err);
+        setError(true);
+      })
       .finally(() => setLoading(false));
   }, []);
 

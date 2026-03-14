@@ -56,8 +56,9 @@ export const custom: ZeroCustomTokens = {
   chart: {
     defaultHeight: 350,
     sparklineMaxHeight: 150,
-    gaugeMaxHeight: 250,
-    gaugeWidth: 200,
+    gaugeMaxHeight: 300,
+    gaugeSize: 300,
+    gaugeFontSize: 22,
     lineStrokeWidth: 2.5,
     barBorderRadius: 6,
   },

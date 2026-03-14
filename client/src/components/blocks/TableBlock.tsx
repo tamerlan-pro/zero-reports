@@ -21,6 +21,7 @@ import InputAdornment from '@mui/material/InputAdornment';
 import Tooltip from '@mui/material/Tooltip';
 import type { TableBlock as TableBlockType, TableColumn } from '../../types/report';
 import { resolveLocale } from '../../utils/locale';
+import { useReportFilters, applyFilters } from '../../context/ReportFilterContext';
 
 const chipColors: Record<string, 'success' | 'warning' | 'error' | 'info' | 'default'> = {
   active: 'success',
@@ -205,9 +206,13 @@ interface Props {
 export function TableBlock({ block }: Props) {
   const { i18n } = useTranslation();
   const lang = i18n.language;
+  const { filters, filterDefs } = useReportFilters();
+  const filteredRows = block.id
+    ? applyFilters(block.rows as Record<string, unknown>[], filters, block.id, filterDefs)
+    : block.rows;
   const columns = buildColumns(block.columns, lang);
   const pageSize = block.pageSize || 10;
-  const rowCount = block.rows.length;
+  const rowCount = filteredRows.length;
 
   const tableHeight = block.autoHeight
     ? undefined
@@ -223,7 +228,7 @@ export function TableBlock({ block }: Props) {
       )}
       <Box sx={{ width: '100%', height: tableHeight }}>
         <DataGridPro
-          rows={block.rows as Array<Record<string, unknown> & { id: number | string }>}
+          rows={filteredRows as Array<Record<string, unknown> & { id: number | string }>}
           columns={columns}
           initialState={{
             pagination: { paginationModel: { pageSize } },

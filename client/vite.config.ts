@@ -7,6 +7,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@zero/theme': path.resolve(__dirname, './src/theme/index.ts'),
+      '@zero/contracts': path.resolve(__dirname, '../packages/contracts/src/index.ts'),
     },
   },
   server: {

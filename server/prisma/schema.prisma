@@ -9,13 +9,28 @@ datasource db {
 }
 
 model Report {
-  id          String   @id @default(uuid())
-  slug        String   @unique
-  token       String   @unique @default(uuid())
+  id          String    @id @default(uuid())
+  slug        String    @unique
+  token       String    @unique @default(uuid())
   title       Json
   description Json?
   config      Json
-  isPublished Boolean  @default(true)
+  isPublished Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  webhooks    Webhook[]
+
+  @@index([isPublished, createdAt(sort: Desc)])
+}
+
+model Webhook {
+  id          String   @id @default(uuid())
+  reportSlug  String
+  callbackUrl String
+  events      String[]
+  isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  report      Report   @relation(fields: [reportSlug], references: [slug], onDelete: Cascade)
+
+  @@index([reportSlug])
 }

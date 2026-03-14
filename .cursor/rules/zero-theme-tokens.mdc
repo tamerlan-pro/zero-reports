@@ -127,8 +127,9 @@ theme.custom.chartColors              // string[] — палитра серии
 theme.custom.chartColorPairs          // Record<string, string> — светлые пары
 theme.custom.chart.defaultHeight      // 350
 theme.custom.chart.sparklineMaxHeight // 150
-theme.custom.chart.gaugeMaxHeight     // 250
-theme.custom.chart.gaugeWidth         // 200
+theme.custom.chart.gaugeMaxHeight     // 300
+theme.custom.chart.gaugeSize          // 300
+theme.custom.chart.gaugeFontSize      // 22
 theme.custom.chart.lineStrokeWidth    // 2.5
 theme.custom.chart.barBorderRadius    // 6
 ```

@@ -1,0 +1,284 @@
+{
+  "slug": "example-dashboard-2026",
+  "title": { "ru": "Пример: Дашборд продаж 2026", "en": "Example: Sales Dashboard 2026" },
+  "description": {
+    "ru": "Образцовый дашборд, соответствующий всем дизайн-правилам: фильтры в grid, малые графики сгруппированы, таблица на полную ширину, вкладки для секций.",
+    "en": "Exemplary dashboard following all design guidelines: filters in grid, small charts grouped, table full-width, tabs for sections."
+  },
+  "config": {
+    "schemaVersion": 1,
+    "dataBindings": [
+      {
+        "sourceBlockId": "clients-table",
+        "sourceField": "clientId",
+        "targetBlockId": "revenue-chart",
+        "targetFilter": "clientId"
+      }
+    ],
+    "blocks": [
+      {
+        "type": "heading",
+        "level": 1,
+        "content": { "ru": "Дашборд продаж 2026", "en": "Sales Dashboard 2026" },
+        "subtitle": { "ru": "Квартальная аналитика и интерактивные фильтры", "en": "Quarterly analytics with interactive filters" }
+      },
+      {
+        "type": "callout",
+        "severity": "info",
+        "title": { "ru": "Как использовать", "en": "How to use" },
+        "content": {
+          "ru": "Используйте фильтры «Период» и «Категория» для уточнения данных. Переключайте вкладки для разных срезов. Нажмите строку в таблице клиентов — график выручки обновится.",
+          "en": "Use the Period and Category filters to narrow data. Switch tabs for different views. Click a row in the clients table — the revenue chart updates accordingly."
+        }
+      },
+      {
+        "type": "metrics",
+        "columns": 4,
+        "items": [
+          { "label": { "ru": "Выручка", "en": "Revenue" }, "value": "48.3M ₽", "delta": { "ru": "+22%", "en": "+22%" }, "deltaType": "positive", "icon": "solar:chart-2-bold-duotone", "color": "primary" },
+          { "label": { "ru": "Расходы", "en": "Expenses" }, "value": "31.2M ₽", "delta": { "ru": "+8%", "en": "+8%" }, "deltaType": "negative", "icon": "solar:wallet-bold-duotone", "color": "danger" },
+          { "label": { "ru": "Клиенты", "en": "Clients" }, "value": 4820, "delta": { "ru": "+340", "en": "+340" }, "deltaType": "positive", "icon": "solar:users-group-two-rounded-bold-duotone", "color": "success" },
+          { "label": { "ru": "Конверсия", "en": "Conversion" }, "value": "4.1%", "delta": { "ru": "+0.3%", "en": "+0.3%" }, "deltaType": "positive", "icon": "solar:target-bold-duotone", "color": "warning" }
+        ]
+      },
+      {
+        "type": "filterBar",
+        "blocks": [
+          {
+            "type": "filter",
+            "id": "period-filter",
+            "filterId": "period",
+            "label": { "ru": "Период", "en": "Period" },
+            "filterType": "select",
+            "defaultValue": "all",
+            "options": [
+              { "value": "all", "label": { "ru": "Весь год", "en": "Full year" } },
+              { "value": "q1", "label": { "ru": "Q1 2026", "en": "Q1 2026" } },
+              { "value": "q2", "label": { "ru": "Q2 2026", "en": "Q2 2026" } },
+              { "value": "q3", "label": { "ru": "Q3 2026", "en": "Q3 2026" } },
+              { "value": "q4", "label": { "ru": "Q4 2026", "en": "Q4 2026" } }
+            ],
+            "targetBlockIds": ["revenue-chart", "clients-table", "region-bar-chart"]
+          },
+          {
+            "type": "filter",
+            "filterId": "category",
+            "label": { "ru": "Категория", "en": "Category" },
+            "filterType": "multiselect",
+            "options": [
+              { "value": "music", "label": { "ru": "Музыка", "en": "Music" } },
+              { "value": "video", "label": { "ru": "Видео", "en": "Video" } },
+              { "value": "merch", "label": { "ru": "Мерч", "en": "Merch" } }
+            ],
+            "targetBlockIds": ["revenue-chart"]
+          }
+        ]
+      },
+      {
+        "type": "divider"
+      },
+      {
+        "type": "tabs",
+        "defaultTab": "overview",
+        "tabs": [
+          {
+            "id": "overview",
+            "label": { "ru": "Обзор", "en": "Overview" },
+            "icon": "solar:chart-square-bold-duotone",
+            "blocks": [
+              {
+                "type": "chart",
+                "id": "revenue-chart",
+                "title": { "ru": "Динамика выручки и расходов", "en": "Revenue & Expenses Dynamics" },
+                "chartType": "line",
+                "height": 400,
+                "xAxis": { "dataKey": "month", "label": { "ru": "Месяц", "en": "Month" }, "scaleType": "band" },
+                "series": [
+                  { "dataKey": "revenue", "label": { "ru": "Выручка", "en": "Revenue" }, "color": "primary", "area": true },
+                  { "dataKey": "expenses", "label": { "ru": "Расходы", "en": "Expenses" }, "color": "danger" }
+                ],
+                "data": [
+                  { "month": { "ru": "Январь", "en": "January" }, "revenue": 3800000, "expenses": 2600000, "period": "q1", "category": "music" },
+                  { "month": { "ru": "Февраль", "en": "February" }, "revenue": 4100000, "expenses": 2700000, "period": "q1", "category": "video" },
+                  { "month": { "ru": "Март", "en": "March" }, "revenue": 4500000, "expenses": 2800000, "period": "q1", "category": "merch" },
+                  { "month": { "ru": "Апрель", "en": "April" }, "revenue": 5200000, "expenses": 3100000, "period": "q2", "category": "music" },
+                  { "month": { "ru": "Май", "en": "May" }, "revenue": 4800000, "expenses": 2900000, "period": "q2", "category": "video" },
+                  { "month": { "ru": "Июнь", "en": "June" }, "revenue": 5600000, "expenses": 3300000, "period": "q2", "category": "merch" },
+                  { "month": { "ru": "Июль", "en": "July" }, "revenue": 5100000, "expenses": 3050000, "period": "q3", "category": "music" },
+                  { "month": { "ru": "Август", "en": "August" }, "revenue": 5400000, "expenses": 3200000, "period": "q3", "category": "video" },
+                  { "month": { "ru": "Сентябрь", "en": "September" }, "revenue": 5800000, "expenses": 3400000, "period": "q3", "category": "merch" },
+                  { "month": { "ru": "Октябрь", "en": "October" }, "revenue": 4700000, "expenses": 2850000, "period": "q4", "category": "music" },
+                  { "month": { "ru": "Ноябрь", "en": "November" }, "revenue": 5300000, "expenses": 3150000, "period": "q4", "category": "video" },
+                  { "month": { "ru": "Декабрь", "en": "December" }, "revenue": 4000000, "expenses": 2400000, "period": "q4", "category": "merch" }
+                ]
+              },
+              {
+                "type": "grid",
+                "columns": 3,
+                "gap": 3,
+                "blocks": [
+                  {
+                    "type": "chart",
+                    "title": { "ru": "По категориям", "en": "By Category" },
+                    "chartType": "pie",
+                    "height": 280,
+                    "series": [{ "dataKey": "value", "label": { "ru": "Доля", "en": "Share" } }],
+                    "data": [
+                      { "id": 0, "label": { "ru": "Музыка", "en": "Music" }, "value": 52, "color": "primary" },
+                      { "id": 1, "label": { "ru": "Видео", "en": "Video" }, "value": 30, "color": "info" },
+                      { "id": 2, "label": { "ru": "Мерч", "en": "Merch" }, "value": 18, "color": "success" }
+                    ]
+                  },
+                  {
+                    "type": "chart",
+                    "title": { "ru": "Выручка (тренд)", "en": "Revenue (sparkline)" },
+                    "chartType": "sparkline",
+                    "height": 280,
+                    "series": [],
+                    "data": [],
+                    "sparklineData": [3800000, 4100000, 4500000, 5200000, 4800000, 5600000, 5100000, 5400000, 5800000, 4700000, 5300000, 4000000],
+                    "sparklinePlotType": "line",
+                    "sparklineArea": true,
+                    "sparklineColor": "primary"
+                  },
+                  {
+                    "type": "chart",
+                    "title": { "ru": "Выполнение плана", "en": "Plan Completion" },
+                    "chartType": "gauge",
+                    "height": 280,
+                    "series": [],
+                    "data": [],
+                    "gaugeValue": 82,
+                    "gaugeMin": 0,
+                    "gaugeMax": 100
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "by-region",
+            "label": { "ru": "По регионам", "en": "By Region" },
+            "icon": "solar:map-point-bold-duotone",
+            "blocks": [
+              {
+                "type": "chart",
+                "id": "region-bar-chart",
+                "title": { "ru": "Выручка по регионам", "en": "Revenue by Region" },
+                "chartType": "bar",
+                "height": 380,
+                "xAxis": { "dataKey": "region", "scaleType": "band" },
+                "series": [
+                  { "dataKey": "revenue", "label": { "ru": "Выручка", "en": "Revenue" }, "color": "primary" },
+                  { "dataKey": "target", "label": { "ru": "План", "en": "Target" }, "color": "success" }
+                ],
+                "data": [
+                  { "region": { "ru": "Москва", "en": "Moscow" }, "revenue": 5200000, "target": 5800000, "period": "q1" },
+                  { "region": { "ru": "Санкт-Петербург", "en": "St. Petersburg" }, "revenue": 2600000, "target": 2800000, "period": "q1" },
+                  { "region": { "ru": "Новосибирск", "en": "Novosibirsk" }, "revenue": 1400000, "target": 1500000, "period": "q1" },
+                  { "region": { "ru": "Казань", "en": "Kazan" }, "revenue": 1200000, "target": 1100000, "period": "q1" },
+                  { "region": { "ru": "Регионы", "en": "Other" }, "revenue": 3100000, "target": 3300000, "period": "q1" }
+                ]
+              },
+              {
+                "type": "grid",
+                "columns": 2,
+                "gap": 3,
+                "blocks": [
+                  {
+                    "type": "chart",
+                    "title": { "ru": "Воронка конверсий", "en": "Conversion Funnel" },
+                    "chartType": "funnel",
+                    "height": 320,
+                    "series": [],
+                    "data": [
+                      { "label": { "ru": "Посещения", "en": "Visits" }, "value": 50000, "color": "primary" },
+                      { "label": { "ru": "Лиды", "en": "Leads" }, "value": 18000, "color": "info" },
+                      { "label": { "ru": "Квалификация", "en": "Qualified" }, "value": 6500, "color": "warning" },
+                      { "label": { "ru": "Сделки", "en": "Deals" }, "value": 2100, "color": "success" },
+                      { "label": { "ru": "Закрытые", "en": "Closed" }, "value": 820, "color": "danger" }
+                    ]
+                  },
+                  {
+                    "type": "chart",
+                    "title": { "ru": "Радар компетенций", "en": "Competency Radar" },
+                    "chartType": "radar",
+                    "height": 320,
+                    "series": [
+                      { "dataKey": "score", "label": { "ru": "Команда A", "en": "Team A" }, "color": "primary", "area": true },
+                      { "dataKey": "score2", "label": { "ru": "Команда B", "en": "Team B" }, "color": "success", "area": true }
+                    ],
+                    "radar": {
+                      "metrics": [
+                        { "name": { "ru": "Продажи", "en": "Sales" }, "max": 100 },
+                        { "name": { "ru": "Маркетинг", "en": "Marketing" }, "max": 100 },
+                        { "name": { "ru": "Поддержка", "en": "Support" }, "max": 100 },
+                        { "name": { "ru": "Разработка", "en": "Dev" }, "max": 100 },
+                        { "name": { "ru": "Аналитика", "en": "Analytics" }, "max": 100 }
+                      ]
+                    },
+                    "data": [
+                      { "score": 85, "score2": 72 },
+                      { "score": 70, "score2": 88 },
+                      { "score": 92, "score2": 65 },
+                      { "score": 78, "score2": 95 },
+                      { "score": 88, "score2": 80 }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "divider"
+      },
+      {
+        "type": "heading",
+        "level": 2,
+        "content": { "ru": "Детализация по клиентам", "en": "Client Details" }
+      },
+      {
+        "type": "table",
+        "id": "clients-table",
+        "title": { "ru": "Топ-клиенты 2026", "en": "Top Clients 2026" },
+        "pageSize": 10,
+        "density": "standard",
+        "headerFilters": true,
+        "striped": true,
+        "columnPinning": { "left": ["name"] },
+        "columns": [
+          { "field": "name", "headerName": { "ru": "Клиент", "en": "Client" }, "flex": 1 },
+          { "field": "category", "headerName": { "ru": "Категория", "en": "Category" }, "width": 130, "renderAs": "chip" },
+          { "field": "revenue", "headerName": { "ru": "Выручка, ₽", "en": "Revenue, ₽" }, "width": 150, "type": "number" },
+          { "field": "deals", "headerName": { "ru": "Сделок", "en": "Deals" }, "width": 100, "type": "number" },
+          { "field": "growth", "headerName": { "ru": "Рост", "en": "Growth" }, "width": 120, "renderAs": "progress" },
+          { "field": "status", "headerName": { "ru": "Статус", "en": "Status" }, "width": 130, "renderAs": "chip" },
+          { "field": "region", "headerName": { "ru": "Регион", "en": "Region" }, "width": 150 }
+        ],
+        "rows": [
+          { "id": 1, "clientId": "c1", "name": "ООО МузТрек", "category": "music", "revenue": 4800000, "deals": 24, "growth": 85, "status": "active", "region": "Москва", "period": "q1" },
+          { "id": 2, "clientId": "c2", "name": "ПАО СтримВидео", "category": "video", "revenue": 6200000, "deals": 31, "growth": 92, "status": "active", "region": "Санкт-Петербург", "period": "q2" },
+          { "id": 3, "clientId": "c3", "name": "ООО МерчШоп", "category": "merch", "revenue": 2100000, "deals": 12, "growth": 67, "status": "active", "region": "Новосибирск", "period": "q3" },
+          { "id": 4, "clientId": "c4", "name": "ИП Артёмов", "category": "music", "revenue": 980000, "deals": 5, "growth": 45, "status": "pending", "region": "Казань", "period": "q1" },
+          { "id": 5, "clientId": "c5", "name": "АО МедиаГрупп", "category": "video", "revenue": 8900000, "deals": 44, "growth": 98, "status": "active", "region": "Москва", "period": "q2" },
+          { "id": 6, "clientId": "c6", "name": "ООО ЛейблПро", "category": "music", "revenue": 3400000, "deals": 17, "growth": 73, "status": "active", "region": "Москва", "period": "q3" },
+          { "id": 7, "clientId": "c7", "name": "ИП Сидорова", "category": "merch", "revenue": 520000, "deals": 3, "growth": 28, "status": "inactive", "region": "Регионы", "period": "q1" },
+          { "id": 8, "clientId": "c8", "name": "ЗАО ТрекЛаб", "category": "music", "revenue": 1750000, "deals": 9, "growth": 55, "status": "new", "region": "Казань", "period": "q2" },
+          { "id": 9, "clientId": "c9", "name": "ООО ВидеоМакс", "category": "video", "revenue": 5100000, "deals": 26, "growth": 88, "status": "active", "region": "Санкт-Петербург", "period": "q3" },
+          { "id": 10, "clientId": "c10", "name": "ПАО МерчКинг", "category": "merch", "revenue": 3900000, "deals": 20, "growth": 79, "status": "active", "region": "Новосибирск", "period": "q1" }
+        ]
+      },
+      {
+        "type": "callout",
+        "severity": "success",
+        "title": { "ru": "Итог года", "en": "Year Summary" },
+        "content": {
+          "ru": "Все ключевые показатели превысили план. Рост выручки +22% YoY. Особое внимание — сегменту Видео (+34%). Следующая сверка — 01.04.2026.",
+          "en": "All KPIs exceeded targets. Revenue grew +22% YoY. Notable: Video segment +34%. Next review — 01.04.2026."
+        }
+      }
+    ]
+  }
+}

@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import {
   Box,
@@ -10,8 +10,10 @@ import {
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { Icon } from '@iconify/react';
+import axios from 'axios';
 import { axiosInstance } from '../providers';
 import { BlockRenderer } from '../components/blocks/BlockRenderer';
+import { ReportFilterProvider, extractFilterDefs } from '../context/ReportFilterContext';
 import { TableOfContents, TocDots, extractTocItems } from '../components/TableOfContents';
 import { useAppLayout } from '../components/layout/AppLayout';
 import { extractSearchItems } from '../utils/searchIndex';
@@ -27,27 +29,32 @@ export function ReportViewerPage() {
   const [error, setError] = useState<'not_found' | 'network' | null>(null);
   const { setSidebar, setSearchItems } = useAppLayout();
 
-  const fetchReport = async () => {
+  const fetchReport = useCallback(async () => {
+    if (!token) return;
     setLoading(true);
     setError(null);
     try {
-      const { data } = await axiosInstance.get(`/reports/${token}`);
+      const { data } = await axiosInstance.get<Report>(`/reports/${token}`);
       setReport(data);
-    } catch (err: unknown) {
-      const status = (err as { response?: { status?: number } })?.response?.status;
-      setError(status === 404 ? 'not_found' : 'network');
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        setError(err.response?.status === 404 ? 'not_found' : 'network');
+      } else {
+        setError('network');
+      }
     } finally {
       setLoading(false);
     }
-  };
-
-  useEffect(() => {
-    if (token) fetchReport();
   }, [token]);
 
+  useEffect(() => {
+    void fetchReport();
+  }, [fetchReport]);
+
   const blocks = report?.config?.blocks ?? [];
-  const tocItems = useMemo(() => extractTocItems(blocks, lang), [report, lang]);
-  const searchItems = useMemo(() => extractSearchItems(blocks), [report]);
+  const tocItems = useMemo(() => extractTocItems(blocks, lang), [blocks, lang]);
+  const searchItems = useMemo(() => extractSearchItems(blocks), [blocks]);
+  const filterDefs = useMemo(() => extractFilterDefs(blocks), [blocks]);
 
   useEffect(() => {
     if (report) {
@@ -143,7 +150,7 @@ export function ReportViewerPage() {
               color="inherit"
               size="small"
               startIcon={<Icon icon="solar:refresh-bold-duotone" width={20} />}
-              onClick={fetchReport}
+              onClick={() => void fetchReport()}
             >
               {t('common.retry')}
             </Button>
@@ -199,13 +206,15 @@ export function ReportViewerPage() {
         </Box>
       </Box>
 
-      <Stack spacing={4}>
-        {blocks.map((block, i) => (
-          <Box key={i} id={`block-${i}`} sx={{ scrollMarginTop: '64px' }}>
-            <BlockRenderer block={block} />
-          </Box>
-        ))}
-      </Stack>
+      <ReportFilterProvider filterDefs={filterDefs}>
+        <Stack spacing={4}>
+          {blocks.map((block, i) => (
+            <Box key={i} id={`block-${i}`} sx={{ scrollMarginTop: '64px' }}>
+              <BlockRenderer block={block} />
+            </Box>
+          ))}
+        </Stack>
+      </ReportFilterProvider>
     </>
   );
 }

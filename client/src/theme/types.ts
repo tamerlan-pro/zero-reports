@@ -39,7 +39,8 @@ export interface ZeroCustomTokens {
     defaultHeight: number;
     sparklineMaxHeight: number;
     gaugeMaxHeight: number;
-    gaugeWidth: number;
+    gaugeSize: number;
+    gaugeFontSize: number;
     lineStrokeWidth: number;
     barBorderRadius: number;
   };

@@ -33,6 +33,7 @@ export const feedbackComponents: Components<Theme> = {
       root: {
         borderRadius: 16,
         padding: '12px 16px',
+        alignItems: 'center',
         fontSize: heroui.typography.small.fontSize,
         lineHeight: 1.43,
         border: 'none',

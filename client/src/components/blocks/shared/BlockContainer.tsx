@@ -13,7 +13,7 @@ interface BlockContainerProps extends Omit<PaperProps, 'children'> {
 export function BlockContainer({ children, noPadding = false, sx, ...rest }: BlockContainerProps) {
   return (
     <Paper
-      sx={[{ p: noPadding ? 0 : 3, overflow: 'hidden' }, ...(Array.isArray(sx) ? sx : [sx])]}
+      sx={[{ p: noPadding ? 0 : 3, overflow: 'hidden', flex: 1 }, ...(Array.isArray(sx) ? sx : [sx])]}
       {...rest}
     >
       {children}

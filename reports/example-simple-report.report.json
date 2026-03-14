@@ -1,0 +1,132 @@
+{
+  "slug": "example-simple-report-2026",
+  "title": { "ru": "Пример: Простой отчёт Q1 2026", "en": "Example: Simple Report Q1 2026" },
+  "description": {
+    "ru": "Линейный отчёт: крупный график на всю ширину, малые графики сгруппированы в grid, таблица full-width. Соответствует паттерну SimpleReport.",
+    "en": "Linear report: full-width line chart, small charts grouped in grid, full-width table. Follows the SimpleReport pattern."
+  },
+  "config": {
+    "schemaVersion": 1,
+    "blocks": [
+      {
+        "type": "heading",
+        "level": 1,
+        "content": { "ru": "Итоги Q1 2026", "en": "Q1 2026 Results" },
+        "subtitle": { "ru": "Выручка, расходы и детализация по клиентам", "en": "Revenue, expenses, and client breakdown" }
+      },
+      {
+        "type": "callout",
+        "severity": "info",
+        "title": { "ru": "Примечание", "en": "Note" },
+        "content": {
+          "ru": "Данные актуальны на 31.03.2026. Следующее обновление — 01.07.2026.",
+          "en": "Data is current as of 31.03.2026. Next update — 01.07.2026."
+        }
+      },
+      {
+        "type": "metrics",
+        "columns": 4,
+        "items": [
+          { "label": { "ru": "Выручка", "en": "Revenue" }, "value": "12.4M ₽", "delta": { "ru": "+15%", "en": "+15%" }, "deltaType": "positive", "icon": "solar:chart-2-bold-duotone", "color": "primary" },
+          { "label": { "ru": "Расходы", "en": "Expenses" }, "value": "8.1M ₽", "delta": { "ru": "+3%", "en": "+3%" }, "deltaType": "negative", "icon": "solar:wallet-bold-duotone", "color": "danger" },
+          { "label": { "ru": "Клиенты", "en": "Clients" }, "value": 1240, "delta": { "ru": "+120", "en": "+120" }, "deltaType": "positive", "icon": "solar:users-group-two-rounded-bold-duotone", "color": "success" },
+          { "label": { "ru": "Конверсия", "en": "Conversion" }, "value": "3.2%", "delta": { "ru": "-0.1%", "en": "-0.1%" }, "deltaType": "neutral", "icon": "solar:target-bold-duotone", "color": "warning" }
+        ]
+      },
+      {
+        "type": "divider"
+      },
+      {
+        "type": "chart",
+        "title": { "ru": "Динамика выручки по месяцам", "en": "Monthly Revenue Dynamics" },
+        "chartType": "line",
+        "height": 400,
+        "xAxis": { "dataKey": "month", "label": { "ru": "Месяц", "en": "Month" }, "scaleType": "band" },
+        "series": [
+          { "dataKey": "revenue", "label": { "ru": "Выручка", "en": "Revenue" }, "color": "primary", "area": true },
+          { "dataKey": "expenses", "label": { "ru": "Расходы", "en": "Expenses" }, "color": "danger" }
+        ],
+        "data": [
+          { "month": { "ru": "Январь", "en": "January" }, "revenue": 3800000, "expenses": 2600000 },
+          { "month": { "ru": "Февраль", "en": "February" }, "revenue": 4100000, "expenses": 2700000 },
+          { "month": { "ru": "Март", "en": "March" }, "revenue": 4500000, "expenses": 2800000 }
+        ]
+      },
+      {
+        "type": "grid",
+        "columns": 2,
+        "gap": 3,
+        "blocks": [
+          {
+            "type": "chart",
+            "title": { "ru": "Выручка по продуктам", "en": "Revenue by Product" },
+            "chartType": "pie",
+            "height": 320,
+            "series": [{ "dataKey": "value", "label": { "ru": "Доля", "en": "Share" } }],
+            "data": [
+              { "id": 0, "label": { "ru": "Продукт A", "en": "Product A" }, "value": 45, "color": "primary" },
+              { "id": 1, "label": { "ru": "Продукт B", "en": "Product B" }, "value": 30, "color": "success" },
+              { "id": 2, "label": { "ru": "Продукт C", "en": "Product C" }, "value": 25, "color": "warning" }
+            ]
+          },
+          {
+            "type": "chart",
+            "title": { "ru": "Выручка по регионам", "en": "Revenue by Region" },
+            "chartType": "bar",
+            "height": 320,
+            "xAxis": { "dataKey": "region", "scaleType": "band" },
+            "series": [{ "dataKey": "revenue", "label": { "ru": "Выручка", "en": "Revenue" }, "color": "primary" }],
+            "data": [
+              { "region": { "ru": "Москва", "en": "Moscow" }, "revenue": 5200000 },
+              { "region": { "ru": "СПб", "en": "St. Petersburg" }, "revenue": 3100000 },
+              { "region": { "ru": "Новосибирск", "en": "Novosibirsk" }, "revenue": 2100000 },
+              { "region": { "ru": "Регионы", "en": "Other" }, "revenue": 1700000 }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "divider"
+      },
+      {
+        "type": "heading",
+        "level": 2,
+        "content": { "ru": "Детализация по клиентам", "en": "Client Details" }
+      },
+      {
+        "type": "table",
+        "title": { "ru": "Топ-клиенты Q1 2026", "en": "Top Clients Q1 2026" },
+        "pageSize": 10,
+        "density": "standard",
+        "striped": true,
+        "columnPinning": { "left": ["name"] },
+        "columns": [
+          { "field": "name", "headerName": { "ru": "Клиент", "en": "Client" }, "flex": 1 },
+          { "field": "revenue", "headerName": { "ru": "Выручка, ₽", "en": "Revenue, ₽" }, "width": 150, "type": "number" },
+          { "field": "deals", "headerName": { "ru": "Сделок", "en": "Deals" }, "width": 120, "type": "number" },
+          { "field": "growth", "headerName": { "ru": "Рост, %", "en": "Growth, %" }, "width": 130, "renderAs": "progress" },
+          { "field": "status", "headerName": { "ru": "Статус", "en": "Status" }, "width": 130, "renderAs": "chip" }
+        ],
+        "rows": [
+          { "id": 1, "name": "ООО Альфа", "revenue": 2400000, "deals": 12, "growth": 78, "status": "active" },
+          { "id": 2, "name": "ООО Бета", "revenue": 1800000, "deals": 8, "growth": 65, "status": "active" },
+          { "id": 3, "name": "ИП Иванов", "revenue": 950000, "deals": 5, "growth": 42, "status": "pending" },
+          { "id": 4, "name": "ЗАО Гамма", "revenue": 3200000, "deals": 15, "growth": 91, "status": "active" },
+          { "id": 5, "name": "ООО Дельта", "revenue": 670000, "deals": 3, "growth": 28, "status": "new" },
+          { "id": 6, "name": "ПАО Омега", "revenue": 4100000, "deals": 20, "growth": 95, "status": "active" },
+          { "id": 7, "name": "ИП Петров", "revenue": 280000, "deals": 2, "growth": 15, "status": "inactive" },
+          { "id": 8, "name": "ООО Сигма", "revenue": 1500000, "deals": 7, "growth": 55, "status": "active" }
+        ]
+      },
+      {
+        "type": "callout",
+        "severity": "success",
+        "title": { "ru": "Итог Q1", "en": "Q1 Summary" },
+        "content": {
+          "ru": "Выручка Q1 составила 12.4M ₽ (+15% к Q1 2025). Основной рост — сегмент Продукт A (+22%). Расходы под контролем: рост всего +3%.",
+          "en": "Q1 revenue reached 12.4M ₽ (+15% vs Q1 2025). Main driver: Product A segment (+22%). Expenses well-controlled at +3% growth."
+        }
+      }
+    ]
+  }
+}

@@ -23,7 +23,8 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
     "paths": {
-      "@zero/theme": ["./src/theme/index.ts"]
+      "@zero/theme": ["./src/theme/index.ts"],
+      "@zero/contracts": ["../packages/contracts/src/index.ts"]
     }
   },
   "include": ["src"]

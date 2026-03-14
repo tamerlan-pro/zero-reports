@@ -24,6 +24,9 @@ export const chartComponents: Components<Theme> = {
     },
   },
   MuiChartsLegend: {
+    defaultProps: {
+      direction: 'horizontal',
+    },
     styleOverrides: {
       root: ({ theme: t }) => ({
         '& .MuiChartsLegend-label': {
@@ -61,8 +64,8 @@ export const chartComponents: Components<Theme> = {
   MuiBarElement: {
     styleOverrides: {
       root: {
-        rx: custom.chart.barBorderRadius,
-        ry: custom.chart.barBorderRadius,
+        rx: `${custom.chart.barBorderRadius}px`,
+        ry: `${custom.chart.barBorderRadius}px`,
       },
     },
   },

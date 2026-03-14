@@ -1,6 +1,7 @@
 import type { LocalizedString } from './locale';
 import { resolveLocale } from './locale';
 import type { ReportBlock } from '../types/report';
+import { getChildBlocks } from '@zero/contracts';
 
 export interface SearchItem {
   id: string;
@@ -69,14 +70,14 @@ export function extractSearchItems(blocks: ReportBlock[]): SearchItem[] {
         }
         break;
       }
-      case 'grid': {
-        for (const child of block.blocks) {
-          walk(child, index);
+      default: {
+        for (const group of getChildBlocks(block)) {
+          for (const child of group.blocks) {
+            walk(child, index);
+          }
         }
         break;
       }
-      default:
-        break;
     }
   }
 

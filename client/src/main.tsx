@@ -9,11 +9,17 @@ import './i18n';
 import './index.css';
 import App from './App';
 
-LicenseInfo.setLicenseKey(
-  '794a35ce677975ddc05a05f5706d1d3dTz0xMjUyMzgsRT0xODAxNzg1NTk5MDAwLFM9cHJvLExNPXN1YnNjcmlwdGlvbixQVj1RMy0yMDI0LEtWPTI=',
-);
+const muiLicenseKey = import.meta.env.VITE_MUI_LICENSE_KEY as string | undefined;
+if (muiLicenseKey) {
+  LicenseInfo.setLicenseKey(muiLicenseKey);
+}
 
-createRoot(document.getElementById('root')!).render(
+const root = document.getElementById('root');
+if (!root) {
+  throw new Error('Root element not found. Make sure #root exists in index.html.');
+}
+
+createRoot(root).render(
   <StrictMode>
     <App />
   </StrictMode>,
